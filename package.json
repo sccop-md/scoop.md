@@ -1,13 +1,16 @@
 {
   "name": "scoop.md",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Scoop any doc. One click turns any documentation site into context for your coding agent.",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "server": "node server/server.js",
+    "server": "ALLOW_LOCALHOST=${ALLOW_LOCALHOST:-1} node server/server.js",
     "test": "node --test test/*.test.js",
+    "test:contract": "node --test test/contract.test.js",
     "probe": "node scripts/probe.js"
   }
 }
