@@ -39,9 +39,21 @@ test('package stays within budget and points to the full source when cut', () =>
   assert.match(out, /Omitted for length\. Fetch https:\/\/ex\.com\/llms\.txt/);
 });
 
-test('withCurrentPage appends the page only when the shared skill lacks it', () => {
+test('sections too large to include become a pointer to the file', () => {
+  const out = buildPackage({
+    site: 'ex.com',
+    pageUrl: 'https://ex.com/',
+    now,
+    sections: [{ kind: 'llms-full', label: 'Full', url: 'https://ex.com/llms-full.txt', content: null, bytes: 40_000_000 }],
+  });
+  assert.match(out, /one large file \(over 38 MB\).*Fetch https:\/\/ex\.com\/llms-full\.txt/);
+});
+
+test('withCurrentPage puts the page first only when the shared skill lacks it', () => {
+  const shared = [{ label: 'Index', url: 'https://ex.com/llms.txt', content: 'i' }];
   const page = { label: 'This page', url: 'https://ex.com/b.md', content: 'B body' };
-  assert.match(withCurrentPage('shared', page), /B body/);
-  assert.equal(withCurrentPage('shared https://ex.com/b.md', page), 'shared https://ex.com/b.md');
-  assert.equal(withCurrentPage('shared', undefined), 'shared');
+  assert.deepEqual(withCurrentPage(shared, page), [page, ...shared]);
+  const covered = [{ label: 'B', url: 'https://ex.com/b', content: 'b' }, ...shared];
+  assert.equal(withCurrentPage(covered, page), covered, 'a page and its .md twin are the same page');
+  assert.equal(withCurrentPage(shared, null), shared);
 });

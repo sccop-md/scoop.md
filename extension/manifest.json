@@ -1,11 +1,21 @@
 {
   "manifest_version": 3,
   "name": "scoop.md",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scoop any doc. One click turns any documentation site into context for your coding agent.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_title": "Scoop to agent",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
   "options_page": "options.html",
   "permissions": ["activeTab", "scripting", "clipboardWrite", "storage"],

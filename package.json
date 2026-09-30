@@ -11,6 +11,12 @@
     "server": "ALLOW_LOCALHOST=${ALLOW_LOCALHOST:-1} node server/server.js",
     "test": "node --test test/*.test.js",
     "test:contract": "node --test test/contract.test.js",
-    "probe": "node scripts/probe.js"
+    "probe": "node scripts/probe.js",
+    "check:live": "node scripts/check-live.js",
+    "icons": "python3 scripts/make-icons.py",
+    "pack:extension": "node scripts/pack-extension.js"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.13"
   }
 }

@@ -19,14 +19,17 @@ Only material fetched without your cookies is shared with the library. If a page
 ## Run it
 
 ```sh
-npm test          # unit and HTTP tests
-npm run server    # shared library on http://localhost:8787
+npm test                 # unit, HTTP and popup tests
+npm run server           # shared library on http://localhost:8787/v1
 npm run probe -- https://docs.stripe.com/webhooks   # see what a site publishes
+npm run check:live       # scoop real sites and verify every section like the library would (network)
+npm run pack:extension   # dist/scoop.md-extension-<version>.zip for the Chrome Web Store
+npm run icons            # redraw extension/icons (needs python3 + Pillow)
 ```
 
 Load the extension in Chrome: `chrome://extensions` → Developer mode → **Load unpacked** → pick the `extension/` folder. Click the toolbar icon on any docs page, or press Alt+Shift+C.
 
-Settings (library URL, sharing on or off) are on the extension's options page. Leave the library URL empty to work without a library.
+Settings (library URL, sharing on or off) are on the extension's options page. The library defaults to `https://api.scoop.md/v1`; use `http://localhost:8787/v1` with `npm run server`. Leave it empty to work without a library.
 
 ## Layout
 
@@ -34,26 +37,23 @@ Settings (library URL, sharing on or off) are on the extension's options page. L
 extension/            Chrome MV3 extension
   lib/discover.js     finds .md twins and llms.txt files (no credentials)
   lib/extract.js      HTML → Markdown fallback, related links
+  lib/scoop.js        builds a page's sections (shared by the popup and check-live)
+  lib/library.js      api.scoop.md/v1 client; never throws, short timeouts
   lib/package.js      assembles the clipboard document within a size budget
   popup.js            the click flow
+  STORE.md            Chrome Web Store listing, permissions, data disclosures
 server/               shared library (Node, no dependencies, JSON file store)
 scripts/probe.js      runs discovery against real sites
+scripts/check-live.js scoops real sites and verifies each section with server/verify.js
 test/                 node:test suites
 ```
 
 ## Library API
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/skills/best?site=<host>` | Most recent skill confirmed to work, or `null` |
-| POST | `/api/skills` | Save `{ site, sources, content }` |
-| POST | `/api/skills/:id/feedback` | Record `{ worked: true \| false }` |
-
-A skill is served only once it has at least one "worked" and more "worked" than "didn't". Among those, the most recently confirmed one wins.
+The extension talks to the v1 API specified in [docs/BACKEND.md](docs/BACKEND.md): `GET /v1/skills/best?site=`, `POST /v1/skills` (sections are verified against their live sources), `POST /v1/skills/:id/feedback` and `POST /v1/reports`. POSTs carry an anonymous install ID (`X-Scoop-Install`).
 
 ## Known limits (prototype)
 
 - A site is identified by hostname. Different products on one host share a skill.
-- The server trusts clients to send only public material; it doesn't re-fetch sources to check.
-- "Worked" is a single button press. There's no versioning and no protection against spam votes yet.
-- Extraction is heuristic. Sites without a `<main>` or `<article>` element can leak header links into the output.
+- "Worked" is a single button press, one vote per install.
+- Extraction is heuristic: it takes the smallest element around the page's `<h1>` that holds most of the prose.

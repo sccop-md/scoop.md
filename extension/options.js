@@ -1,4 +1,4 @@
-const DEFAULTS = { libraryUrl: 'http://localhost:8787', share: true };
+const DEFAULTS = { libraryUrl: 'https://api.scoop.md/v1', share: true };
 const $ = (id) => document.getElementById(id);
 
 chrome.storage.sync.get(DEFAULTS).then((s) => {

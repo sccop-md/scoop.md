@@ -1,27 +1,46 @@
-import { siteKey, discover } from './lib/discover.js';
+import { siteKey } from './lib/discover.js';
 import { buildPackage, withCurrentPage } from './lib/package.js';
-import { pickMain, htmlToMarkdown, relatedLinks } from './lib/extract.js';
+import { scoopPage, currentPageSection } from './lib/scoop.js';
+import { DEFAULT_LIBRARY, createLibrary, shareBody, notSharedReason } from './lib/library.js';
 
-const DEFAULTS = { libraryUrl: 'http://localhost:8787', share: true };
+const DEFAULTS = { libraryUrl: DEFAULT_LIBRARY, share: true };
+const KIND_BADGE = { 'page-md': '.md', 'page-html': 'page', llms: 'llms', 'llms-full': 'full' };
 const $ = (id) => document.getElementById(id);
 
 let settings;
+let library;
 let tab;
 let clipboardText = '';
 let skillId = null;
 
-function status(text, cls = '') {
+function status(text, cls = 'ok') {
   $('status').textContent = text;
   $('status').className = cls;
 }
 
-function showSources(sources) {
-  $('sources').replaceChildren(...sources.map((s) => {
+function note(id, text, cls = '') {
+  $(id).textContent = text;
+  $(id).className = cls;
+  $(id).hidden = !text;
+}
+
+function showSources(sections) {
+  $('sources').replaceChildren(...sections.map((s) => {
     const li = document.createElement('li');
-    li.textContent = `${s.label}: ${s.url}`;
+    const kind = Object.assign(document.createElement('span'), { className: 'kind', textContent: KIND_BADGE[s.kind] ?? s.kind });
+    const where = Object.assign(document.createElement('span'), { className: 'where', textContent: s.label });
+    where.title = s.url;
+    li.append(kind, where);
     return li;
   }));
-  $('sources').hidden = !sources.length;
+  $('sources').hidden = !sections.length;
+}
+
+function showFeedback(id) {
+  skillId = id;
+  $('feedback').hidden = !id;
+  $('voted').hidden = true;
+  $('report').hidden = true;
 }
 
 async function copy(text) {
@@ -30,138 +49,139 @@ async function copy(text) {
   $('actions').hidden = false;
 }
 
-async function library(path, init) {
-  if (!settings.libraryUrl) return null;
+const kb = (text) => `${Math.max(1, Math.round(text.length / 1024))} KB`;
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+async function tabHtml() {
   try {
-    const res = await fetch(settings.libraryUrl.replace(/\/$/, '') + path, {
-      ...init,
-      headers: { 'content-type': 'application/json' },
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => document.documentElement.outerHTML,
     });
-    return res.ok ? await res.json() : null;
+    return result;
   } catch {
-    return null; // Library unreachable: the button still works locally.
+    return null; // Pages like the Chrome Web Store can't be scripted.
   }
 }
 
-// The page itself as Markdown. Prefer a credential-less fetch so the result is
-// shareable; fall back to the live tab (may include signed-in content, so it
-// is never shared).
-async function currentPage() {
-  const html = await fetchPublicHtml(tab.url);
-  if (html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const md = htmlToMarkdown(pickMain(doc), tab.url);
-    if (md.length > 200) return { doc, md, isPublic: true };
-  }
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => document.documentElement.outerHTML,
+function scoopCurrentTab() {
+  return scoopPage(tab.url, {
+    title: tab.title,
+    parseHtml: (html) => new DOMParser().parseFromString(html, 'text/html'),
+    tabHtml,
   });
-  const doc = new DOMParser().parseFromString(result, 'text/html');
-  return { doc, md: htmlToMarkdown(pickMain(doc), tab.url), isPublic: false };
-}
-
-async function fetchPublicHtml(url) {
-  try {
-    const res = await fetch(url, { credentials: 'omit' });
-    return res.ok ? await res.text() : null;
-  } catch {
-    return null;
-  }
-}
-
-async function build() {
-  const site = siteKey(tab.url);
-  const found = await discover(tab.url);
-  const sections = [];
-  let isPublic = true;
-  let links = [];
-
-  if (found['page-md']?.content) {
-    sections.push({ label: `This page: ${tab.title}`, ...found['page-md'] });
-  } else {
-    const page = await currentPage();
-    isPublic = page.isPublic;
-    links = relatedLinks(page.doc, tab.url);
-    if (page.md) sections.push({ label: `This page: ${tab.title}`, url: tab.url, content: page.md });
-  }
-  if (found['llms']?.content) sections.push({ label: 'Site documentation index (llms.txt)', ...found['llms'] });
-  const full = found['llms-full'];
-  if (full) {
-    sections.push({
-      label: 'Full documentation (llms-full.txt)',
-      url: full.url,
-      content: full.content ??
-        `The complete documentation is available as one large file (over ${Math.round(full.bytes / 1_048_576)} MB), ` +
-        `too large to include here. Fetch ${full.url} and search it when the sections above are not enough.`,
-    });
-  }
-
-  if (!sections.length) throw new Error('Could not find any documentation text on this page.');
-
-  const content = buildPackage({ site, pageUrl: tab.url, sections, relatedLinks: links });
-  return { site, sections, content, isPublic };
 }
 
 async function run({ skipLibrary = false } = {}) {
-  status('Finding docs for this page…');
-  skillId = null;
+  status('Finding docs for this page…', 'busy');
+  note('share', '');
+  showFeedback(null);
+  $('rebuild').hidden = true;
   const site = siteKey(tab.url);
 
-  if (!skipLibrary) {
-    const shared = await library(`/api/skills/best?site=${encodeURIComponent(site)}`);
-    if (shared?.skill) {
-      const pageMd = (await discover(tab.url))['page-md'];
-      const extra = pageMd?.content && { label: `This page: ${tab.title}`, ...pageMd };
-      await copy(withCurrentPage(shared.skill.content, extra));
-      skillId = shared.skill.id;
-      showSources(shared.skill.sources);
-      status(`Copied the shared ${site} skill (worked ${shared.skill.worked}×). Paste it into your agent.`, 'ok');
-      $('rebuild').hidden = false;
-      $('feedback').hidden = false;
-      return;
-    }
+  // Build locally while asking the library; the copy never waits on the
+  // library for more than its short timeout.
+  const local = scoopCurrentTab();
+  local.catch(() => {});
+  const best = skipLibrary ? null : await library.best(site);
+  const shared = best?.ok ? best.data?.skill : null;
+
+  if (shared?.sections?.length) {
+    const current = currentPageSection(await local.catch(() => null));
+    const sections = withCurrentPage(shared.sections, current);
+    const text = buildPackage({ site, pageUrl: tab.url, sections, relatedLinks: shared.relatedLinks ?? [] });
+    await copy(text);
+    showSources(sections);
+    status('Copied. Paste it into your agent.');
+    note('summary', `${kb(text)} from the shared library. Worked for ${plural(shared.worked, 'person', 'people')}` +
+      `${shared.failed ? `, didn't for ${shared.failed}` : ''}.`);
+    $('rebuild').hidden = false;
+    showFeedback(shared.id);
+    return;
   }
 
-  const pkg = await build();
-  await copy(pkg.content);
-  showSources(pkg.sections);
-  const kb = Math.round(pkg.content.length / 1024);
-  status(`Copied ${kb} KB of ${site} docs. Paste it into your agent.`, 'ok');
-
-  if (pkg.isPublic && settings.share) {
-    const saved = await library('/api/skills', {
-      method: 'POST',
-      body: JSON.stringify({
-        site,
-        sources: pkg.sections.map(({ label, url }) => ({ label, url })),
-        content: pkg.content,
-      }),
-    });
-    skillId = saved?.id ?? null;
-  }
-  $('feedback').hidden = !skillId;
+  const scoop = await local;
+  if (!scoop.sections.length) throw new Error('Could not find any documentation text on this page.');
+  const text = buildPackage({ site, pageUrl: scoop.pageUrl, sections: scoop.sections, relatedLinks: scoop.relatedLinks });
+  await copy(text);
+  showSources(scoop.sections);
+  status('Copied. Paste it into your agent.');
+  note('summary', `${kb(text)} from ${plural(scoop.sections.length, 'source')} on ${site}, built from this page.`);
+  await share(scoop);
 }
 
-$('copy').onclick = async () => {
-  await navigator.clipboard.writeText(clipboardText);
-  status('Copied again.', 'ok');
-};
-$('rebuild').onclick = () => run({ skipLibrary: true }).catch((e) => status(e.message, 'err'));
-$('settings').onclick = (e) => { e.preventDefault(); chrome.runtime.openOptionsPage(); };
-for (const btn of document.querySelectorAll('#feedback button')) {
-  btn.onclick = async () => {
-    await library(`/api/skills/${skillId}/feedback`, {
-      method: 'POST',
-      body: JSON.stringify({ worked: btn.dataset.worked === 'true' }),
-    });
-    $('feedback').replaceChildren(Object.assign(document.createElement('p'), { textContent: 'Thanks, noted.' }));
+async function share(scoop) {
+  if (!settings.libraryUrl) return;
+  if (!settings.share) return note('share', 'Not shared: sharing is off in Settings.');
+  if (!scoop.isPublic) return note('share', 'Not shared: this page only loads with your login, so it stays on your machine.');
+
+  note('share', 'Sharing with the library…');
+  const res = await library.share(shareBody(scoop));
+  if (!res.ok) return note('share', `Not shared: ${notSharedReason(res.error, scoop.sections)}`, 'warn');
+  note('share', res.data.duplicate ? 'Already in the library. Vote below once your agent is done.' : 'Shared with the library. Vote below once your agent is done.');
+  showFeedback(res.data.id);
+}
+
+async function vote(worked) {
+  const res = await library.feedback(skillId, worked);
+  note('voted', res.ok
+    ? `Thanks. So far it worked for ${plural(res.data.worked, 'person', 'people')} and didn't for ${res.data.failed}.`
+    : "Couldn't record your vote. Try again in a moment.");
+}
+
+async function report(reason) {
+  const res = await library.report(skillId, reason);
+  $('report').hidden = true;
+  note('voted', res.ok ? 'Reported. Thanks, we will review it.' : "Couldn't send the report. Try again in a moment.");
+}
+
+async function installId() {
+  let { installId: id } = await chrome.storage.local.get('installId');
+  if (!id) {
+    id = crypto.randomUUID();
+    await chrome.storage.local.set({ installId: id });
+  }
+  return id;
+}
+
+async function intro() {
+  const { introSeen } = await chrome.storage.local.get('introSeen');
+  if (introSeen || !settings.share || !settings.libraryUrl) return;
+  $('intro').hidden = false;
+  $('intro-ok').onclick = () => {
+    $('intro').hidden = true;
+    chrome.storage.local.set({ introSeen: true });
   };
 }
 
-(async () => {
+const fail = (e) => status(e?.message || String(e), 'err');
+
+$('copy').onclick = async () => {
+  await navigator.clipboard.writeText(clipboardText);
+  status('Copied again.');
+};
+$('rebuild').onclick = () => run({ skipLibrary: true }).catch(fail);
+$('settings').onclick = (e) => { e.preventDefault(); chrome.runtime.openOptionsPage(); };
+for (const btn of document.querySelectorAll('#feedback button[data-worked]')) {
+  btn.onclick = () => vote(btn.dataset.worked === 'true');
+}
+$('report-open').onclick = (e) => { e.preventDefault(); $('report').hidden = !$('report').hidden; };
+$('report').onsubmit = (e) => { e.preventDefault(); return report($('reason').value); };
+
+async function main() {
   settings = await chrome.storage.sync.get(DEFAULTS);
+  // The prototype's default had no API version in the path.
+  if (settings.libraryUrl === 'http://localhost:8787') settings.libraryUrl += '/v1';
+  library = createLibrary({
+    baseUrl: settings.libraryUrl,
+    installId: await installId(),
+    client: `extension/${chrome.runtime.getManifest().version}`,
+  });
+  await intro();
   [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!/^https?:/.test(tab?.url || '')) return status('Open a documentation page first.', 'err');
   await run();
-})().catch((e) => status(e.message, 'err'));
+}
+
+// Exported so tests can wait for the first run.
+export const ready = main().catch(fail);

@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><title>Code blocks</title></head>
+<body><main>
+<h1>Code blocks</h1>
+<p>Shiki writes one span per line with newlines between them.</p>
+<pre class="shiki"><code><span class="line"><span>const a = 1;</span></span>
+<span class="line"><span>const b = 2;</span></span></code></pre>
+<p>SyntaxHighlighter lays code out as a table with a gutter of line numbers.</p>
+<table class="syntaxhighlighter"><tbody><tr>
+<td class="gutter"><div class="line number1">1</div><div class="line number2">2</div></td>
+<td class="code"><pre><div class="line number1"><code>$.ajax({</code></div><div class="line number2"><code>});</code></div></pre></td>
+</tr></tbody></table>
+<p>Prism in Docusaurus ends every line with a br element instead of a newline.</p>
+<pre class="prism-code language-js"><code><span class="token-line"><span class="token keyword">let</span> x = 1;<br></span><span class="token-line"><span>x++;</span><br></span></code></pre>
+<p>Some highlighters put a line number inside every line.</p>
+<pre><code class="language-py"><span class="code-line"><span class="line-number">1</span>print("hi")
+</span><span class="code-line"><span class="line-number">2</span>print("bye")
+</span></code></pre>
+</main></body></html>

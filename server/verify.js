@@ -110,7 +110,15 @@ function isHtml(contentType, text) {
   return /text\/html/i.test(contentType) || /^\s*<(!doctype|html|head|body)/i.test(text);
 }
 
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+// Common named entities in docs prose. The production Worker should decode the
+// full HTML5 table (docs/BACKEND.md §6); unknown names are left as-is, which
+// costs a few shingles but never a false match.
+const ENTITIES = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  rsquo: '\u2019', lsquo: '\u2018', rdquo: '\u201d', ldquo: '\u201c', mdash: '\u2014', ndash: '\u2013',
+  hellip: '\u2026', middot: '\u00b7', bull: '\u2022', copy: '\u00a9', reg: '\u00ae', trade: '\u2122',
+  times: '\u00d7', rarr: '\u2192', larr: '\u2190', laquo: '\u00ab', raquo: '\u00bb', deg: '\u00b0',
+};
 
 export function htmlToText(html) {
   return html
