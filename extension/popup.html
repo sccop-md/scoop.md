@@ -6,45 +6,92 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header>
-    <img src="icons/icon32.png" alt="" width="16" height="16">
-    <strong>scoop.md</strong>
-    <a id="settings" href="#">Settings</a>
+  <header class="bar">
+    <div class="brand">
+      <img src="icons/icon48.png" alt="" width="28" height="28">
+      <span>scoop<span class="ext">.md</span></span>
+    </div>
+    <div class="tools">
+      <label class="switch" title="Share public docs with the scoop.md library">
+        <input type="checkbox" id="share-toggle" aria-label="Share with the library">
+        <span class="track"><span class="knob"></span></span>
+      </label>
+      <a id="settings" href="#" class="icon" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94 7.07 7.07 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.61.22L2.66 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.25.42.49.42h3.84c.24 0 .44-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+      </a>
+      <button id="theme" class="icon" type="button" title="Switch light or dark" aria-label="Switch light or dark">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.3 22A10 10 0 0 1 9.1 2.5a.75.75 0 0 1 .9 1A8 8 0 0 0 20.5 14a.75.75 0 0 1 1 .9A10 10 0 0 1 12.3 22Z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6L17 3Zm3.5 4.5.4.9.9.4-.9.4-.4.9-.4-.9-.9-.4.9-.4.4-.9Z"/></svg>
+      </button>
+    </div>
   </header>
 
-  <section id="intro" hidden>
-    <p><strong>What gets shared.</strong> When you scoop a page, scoop.md shares its public sources with the scoop.md library so the next person on this site gets a package that worked. Only material fetched without your cookies or logins is shared, with an anonymous install ID. Turn sharing off in Settings.</p>
-    <button id="intro-ok" class="small">Got it</button>
-  </section>
-
-  <p id="status" class="busy" role="status">Finding docs for this page…</p>
-  <p id="summary" hidden></p>
-  <ul id="sources" hidden></ul>
-  <p id="share" hidden></p>
-
-  <div id="actions" hidden>
-    <button id="copy" class="primary">Copy again</button>
-    <button id="rebuild" hidden>Rebuild from this page</button>
-  </div>
-
-  <section id="feedback" hidden>
-    <p>Did your agent manage the task with this?</p>
-    <div class="row">
-      <button data-worked="true">It worked</button>
-      <button data-worked="false">It didn't</button>
-      <a id="report-open" href="#">Report</a>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-scoop" aria-selected="true" aria-controls="panel-scoop">Scoop</button>
+    <button role="tab" id="tab-library" aria-selected="false" aria-controls="panel-library">Library</button>
+    <div id="actions" hidden>
+      <button id="copy" class="outline" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+        Copy
+      </button>
     </div>
-    <p id="voted" hidden></p>
-    <form id="report" hidden>
-      <select id="reason" aria-label="Reason">
-        <option value="wrong">Wrong or outdated</option>
-        <option value="malicious">Malicious instructions</option>
-        <option value="copyright">Copyright</option>
-        <option value="other">Other</option>
-      </select>
-      <button type="submit" class="small">Send report</button>
-    </form>
-  </section>
+  </nav>
+
+  <main>
+    <section id="panel-scoop" role="tabpanel" aria-labelledby="tab-scoop">
+      <div id="intro" class="notice" hidden>
+        <p>scoop.md shares the public docs you scoop with the library, so the next person on this site gets a package that worked. Nothing behind a login is shared. Use the switch above to turn sharing off.</p>
+        <button id="intro-ok" class="text" type="button">Got it</button>
+      </div>
+
+      <p id="status" class="busy" role="status">Finding docs for this page…</p>
+      <p id="summary" class="meta" hidden></p>
+
+      <h2 id="sources-title" hidden>Sources</h2>
+      <ul id="sources" class="items" hidden></ul>
+
+      <p id="share" class="meta" hidden></p>
+
+      <div id="feedback" hidden>
+        <h2>Did your agent build it?</h2>
+        <div class="row">
+          <button data-worked="true" class="outline small" type="button">It worked</button>
+          <button data-worked="false" class="outline small" type="button">It didn't</button>
+          <a id="report-open" href="#" class="quiet">Report</a>
+        </div>
+        <p id="voted" class="meta" hidden></p>
+        <form id="report" hidden>
+          <select id="reason" aria-label="Reason">
+            <option value="wrong">Wrong or outdated</option>
+            <option value="malicious">Malicious instructions</option>
+            <option value="copyright">Copyright</option>
+            <option value="other">Other</option>
+          </select>
+          <button type="submit" class="outline small">Send</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden>
+      <h2 id="lib-site">This site</h2>
+      <ul class="items">
+        <li>
+          <span class="avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"/></svg>
+          </span>
+          <div class="info">
+            <span id="lib-status">Checking the library…</span>
+            <span id="lib-meta" class="meta"></span>
+          </div>
+        </li>
+      </ul>
+      <div class="row">
+        <a id="lib-link" href="https://scoop.md/library" target="_blank" class="link">Open in the scoop.md library</a>
+      </div>
+      <div class="row">
+        <button id="rebuild" class="outline small" type="button" hidden>Rebuild from this page</button>
+      </div>
+    </section>
+  </main>
 
   <script type="module" src="popup.js"></script>
 </body>
