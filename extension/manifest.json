@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "scoop.md",
+  "version": "0.1.0",
+  "description": "Scoop any doc. One click turns any documentation site into context for your coding agent.",
+  "action": {
+    "default_title": "Scoop to agent",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": ["activeTab", "scripting", "clipboardWrite", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+C" }
+    }
+  }
+}

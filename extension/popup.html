@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <strong>scoop.md</strong>
+    <a id="settings" href="#">Settings</a>
+  </header>
+
+  <p id="status">Finding docs for this page…</p>
+  <ul id="sources" hidden></ul>
+
+  <div id="actions" hidden>
+    <button id="copy">Copy again</button>
+    <button id="rebuild" hidden>Rebuild from this page</button>
+  </div>
+
+  <div id="feedback" hidden>
+    <p>Did your agent manage to implement the task?</p>
+    <button data-worked="true">It worked</button>
+    <button data-worked="false">It didn't</button>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

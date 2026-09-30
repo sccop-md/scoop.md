@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>scoop.md settings</title>
+  <style>
+    body { font: 14px/1.5 system-ui, sans-serif; max-width: 520px; margin: 32px auto; padding: 0 16px; }
+    label { display: block; margin: 14px 0 4px; }
+    input[type=url] { width: 100%; padding: 6px; font: inherit; }
+    small { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>scoop.md</h1>
+  <label for="libraryUrl">Shared library URL</label>
+  <input id="libraryUrl" type="url" placeholder="http://localhost:8787">
+  <small>Leave empty to work fully offline, with no shared library.</small>
+
+  <label><input id="share" type="checkbox"> Share packages I build with the library</label>
+  <small>Only material fetched without your cookies or logins is ever shared.</small>
+
+  <p><button id="save">Save</button> <span id="saved"></span></p>
+  <script src="options.js"></script>
+</body>
+</html>
