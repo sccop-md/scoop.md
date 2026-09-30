@@ -1,0 +1,407 @@
+---
+import Base from '../layouts/Base.astro';
+import Unavailable from '../components/Unavailable.astro';
+import NotFound from '../components/NotFound.astro';
+import { getSite, isHostname, normalizeSite, type SkillSummary } from '../lib/api';
+import { ago, bytes, isoDate, plural, KIND_HINT, KIND_LABEL } from '../lib/format';
+
+export const prerender = false;
+
+// Static routes (/, /library, /privacy, /terms) and files in public/ win over
+// this one; anything that isn't a hostname is a 404 without an API call.
+const raw = Astro.params.site ?? '';
+let site = '';
+try {
+  site = normalizeSite(decodeURIComponent(raw));
+} catch {
+  // Malformed escape: not a hostname.
+}
+const valid = isHostname(site);
+if (valid && site !== raw) return Astro.redirect(`/${site}`, 301);
+
+const result = valid ? await getSite(site) : ({ ok: false, reason: 'not_found' } as const);
+if (!result.ok && result.reason === 'not_found') {
+  Astro.response.status = 404;
+  Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+} else if (!result.ok) {
+  Astro.response.status = 503;
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10');
+} else {
+  Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+}
+
+const detail = result.ok ? result.data : null;
+const best = detail?.best ?? null;
+const recent = detail?.recent ?? [];
+const siteUrl = `https://${site}/`;
+
+function state(s: SkillSummary): string {
+  if (best && s.id === best.id) return 'served now';
+  if (s.worked === 0 && s.failed === 0) return 'waiting for a vote';
+  if (s.worked > s.failed) return 'worked, older';
+  return "didn't work";
+}
+---
+
+{!valid ? (
+  <Base title="Not found">
+    <NotFound />
+  </Base>
+) : (
+<Base
+  title={site}
+  description={best
+    ? `The scoop.md package for ${site}: ${plural(best.sources.length, 'source')}, worked ${best.worked} times.`
+    : `scoop.md library page for ${site}.`}
+>
+  <div class="wrap page">
+    <header class="head">
+      <p class="eyebrow"><a href="/library">library</a> / site</p>
+      <h1>{site}</h1>
+      <p class="visit"><a href={siteUrl} rel="noopener">Open {site} ↗</a></p>
+    </header>
+
+    {!result.ok && result.reason === 'unavailable' && <Unavailable path={`/v1/sites/${site}`} />}
+
+    {
+      !result.ok && result.reason === 'not_found' && (
+        <section class="none" aria-labelledby="none-title">
+          <h2 id="none-title">No scoops for {site} yet</h2>
+          <p>
+            Nobody has shared a scoop for this site. Be the first: open{' '}
+            <a href={siteUrl} rel="noopener">{site}</a>, go to the page you need, and click <strong>Scoop to agent</strong>{' '}
+            in the scoop.md extension.
+          </p>
+          <p>
+            <a href="/library">Browse the sites that have one</a>
+          </p>
+        </section>
+      )
+    }
+
+    {
+      detail && (
+        <>
+          <aside class="hint" aria-label="How to scoop this site">
+            <p>
+              <strong>Scoop it:</strong> open <a href={siteUrl} rel="noopener">{site}</a>, go to the page you're
+              working from, and click <strong>Scoop to agent</strong> in the scoop.md extension (or press{' '}
+              <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>). {best
+                ? 'You get this scoop, plus the page you are on if it isn’t already in it.'
+                : 'No scoop is confirmed yet, so you get a fresh one from the live site.'}
+            </p>
+          </aside>
+
+          <section class="best" aria-labelledby="best-title">
+            <p class="eyebrow">best scoop</p>
+            {best ? (
+              <>
+                <h2 id="best-title">What you get when you scoop {site}</h2>
+                <dl class="stats">
+                  <div>
+                    <dt>Worked</dt>
+                    <dd class="big">{best.worked}×</dd>
+                  </div>
+                  <div>
+                    <dt>Didn't</dt>
+                    <dd class="big">{best.failed}×</dd>
+                  </div>
+                  <div>
+                    <dt>Size</dt>
+                    <dd class="big">{bytes(best.sizeBytes)}</dd>
+                  </div>
+                  <div>
+                    <dt>Last confirmed</dt>
+                    <dd>
+                      <time datetime={best.lastWorkedAt ?? undefined}>{ago(best.lastWorkedAt)}</time>
+                    </dd>
+                  </div>
+                </dl>
+                <h3 class="list-title">Sources, in the order your agent reads them</h3>
+                <ol class="sources">
+                  {best.sources.map((s) => (
+                    <li>
+                      <span class={`kind kind--${s.kind}`} title={KIND_HINT[s.kind]}>
+                        {KIND_LABEL[s.kind] ?? s.kind}
+                      </span>
+                      <span class="src-body">
+                        <span class="src-label">{s.label}</span>
+                        <a class="src-url" href={s.url} rel="noopener">
+                          {s.url}
+                        </a>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                <p class="meta muted">
+                  Scooped from <a href={best.pageUrl} rel="noopener">{best.pageUrl}</a> on {isoDate(best.createdAt)}.
+                  Every source was re-fetched by the library, without cookies, and matched before it was stored.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 id="best-title">No scoop confirmed yet</h2>
+                <p class="muted">
+                  There are scoops for {site} below, but none has more "worked" than "didn't" votes. Until one does, the
+                  extension builds a fresh scoop from the live site.
+                </p>
+              </>
+            )}
+          </section>
+
+          {recent.length > 0 && (
+            <section class="recent" aria-labelledby="recent-title">
+              <p class="eyebrow">recent</p>
+              <h2 id="recent-title">Recent scoops</h2>
+              <ul>
+                {recent.map((s) => (
+                  <li class:list={{ current: best && s.id === best.id }}>
+                    <span class="when">
+                      <time datetime={s.createdAt}>{isoDate(s.createdAt)}</time>
+                    </span>
+                    <span class="what">
+                      <span class="kinds">
+                        {s.sources.map((src) => (
+                          <span class={`kind kind--${src.kind}`}>{KIND_LABEL[src.kind] ?? src.kind}</span>
+                        ))}
+                      </span>
+                      <span class="from muted">{new URL(s.pageUrl).pathname}</span>
+                    </span>
+                    <span class="votes">
+                      {s.worked} worked · {s.failed} didn't · {bytes(s.sizeBytes)}
+                    </span>
+                    <span class="state">{state(s)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      )
+    }
+  </div>
+</Base>
+)}
+
+<style>
+  .page {
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .eyebrow a {
+    color: inherit;
+  }
+
+  h1 {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 1rem + 4.5vw, 4rem);
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+    margin-bottom: 0.75rem;
+  }
+
+  .visit {
+    font: 500 0.9rem/1 var(--font-mono);
+    margin-bottom: 2rem;
+  }
+
+  .none h2,
+  .best h2,
+  .recent h2 {
+    font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.1rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .none {
+    border-top: 2px solid var(--rule-strong);
+    padding-top: 1.5rem;
+    max-width: 44rem;
+  }
+
+  .hint {
+    border-left: 4px solid var(--mark);
+    background: var(--sheet);
+    padding: 1rem 1.25rem;
+    max-width: 52rem;
+    margin-bottom: 3rem;
+  }
+
+  .hint p {
+    margin: 0;
+  }
+
+  .best {
+    border-top: 2px solid var(--rule-strong);
+    padding-top: 1.75rem;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, max-content));
+    gap: 1rem 3rem;
+    margin: 0 0 2rem;
+  }
+
+  .stats dt {
+    font: 500 0.8rem/1.2 var(--font-mono);
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .stats dd {
+    margin: 0;
+    font: 500 1rem/1.3 var(--font-mono);
+  }
+
+  .stats .big {
+    font: 700 2rem/1 var(--font-display);
+  }
+
+  .list-title {
+    font: 600 1rem/1.3 var(--font-body);
+    letter-spacing: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .sources {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.25rem;
+    counter-reset: s;
+  }
+
+  .sources li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 2rem 7.5rem minmax(0, 1fr);
+    gap: 0.25rem 0.75rem;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sources li::before {
+    content: counter(s, decimal-leading-zero);
+    font: 500 0.8rem/1 var(--font-mono);
+    color: var(--muted);
+  }
+
+  .sources .kind {
+    justify-self: start;
+  }
+
+  .src-body {
+    display: grid;
+    min-width: 0;
+  }
+
+  .src-label {
+    font-weight: 500;
+  }
+
+  .src-url {
+    font: 400 0.85rem/1.4 var(--font-mono);
+    color: var(--ink-2);
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    font-size: 0.9rem;
+    max-width: 70ch;
+  }
+
+  .meta a {
+    overflow-wrap: anywhere;
+  }
+
+  .recent {
+    margin-top: 4rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 2rem;
+  }
+
+  .recent ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .recent li {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) auto auto;
+    gap: 0.35rem 1.25rem;
+    align-items: baseline;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.95rem;
+  }
+
+  .recent li.current .state {
+    background: var(--mark);
+    color: var(--on-mark);
+  }
+
+  .when,
+  .votes,
+  .state,
+  .from {
+    font: 400 0.85rem/1.4 var(--font-mono);
+  }
+
+  .what {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    min-width: 0;
+  }
+
+  .kinds {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .from {
+    overflow-wrap: anywhere;
+  }
+
+  .state {
+    padding: 0 0.35em;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .sources li {
+      grid-template-columns: 1.75rem minmax(0, 1fr);
+    }
+
+    .sources li .src-body {
+      grid-column: 2;
+    }
+
+    .recent li {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .recent .what,
+    .recent .votes {
+      grid-column: 1 / -1;
+    }
+
+    .recent .when {
+      grid-row: 1;
+    }
+
+    .recent .state {
+      grid-row: 1;
+      justify-self: end;
+    }
+  }
+</style>

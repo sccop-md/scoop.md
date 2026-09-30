@@ -1,0 +1,319 @@
+---
+import Base from '../layouts/Base.astro';
+import ScoopFlow from '../components/ScoopFlow.astro';
+import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
+
+export const prerender = true;
+
+const agents = ['Claude Code', 'Codex', 'Cursor', 'Copilot', 'Windsurf', 'Aider'];
+---
+
+<Base>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="kicker"><code>"Scoop to agent"</code> · a Chrome extension</p>
+      <h1 id="hero-title">Scoop <span class="mark">any</span> doc.</h1>
+      <p class="lede">
+        One button on any documentation site. It copies the docs as clean Markdown, with sources, ready to paste into
+        your coding agent. The site doesn't have to do anything.
+      </p>
+      <div class="cta">
+        {
+          CHROME_STORE_URL ? (
+            <a class="btn" href={CHROME_STORE_URL}>
+              Add to Chrome <span aria-hidden="true">→</span>
+            </a>
+          ) : (
+            <a class="btn" href={GITHUB_URL}>
+              Coming soon to the Chrome Web Store <span aria-hidden="true">→</span>
+            </a>
+          )
+        }
+        <a class="btn btn--quiet" href="/library">Browse the library</a>
+      </div>
+      <p class="agents muted">
+        Paste into {agents.map((a, i) => <>{i > 0 && (i === agents.length - 1 ? ' or ' : ', ')}<span>{a}</span></>)}.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap demo" aria-label="Example: docs.stripe.com/webhooks">
+    <ScoopFlow />
+  </section>
+
+  <section class="wrap band" aria-labelledby="how">
+    <p class="eyebrow">how it works</p>
+    <h2 id="how">Where the Markdown comes from</h2>
+    <p class="intro">
+      Docs sites increasingly publish text meant for machines. scoop.md looks for it first, every time, without your
+      cookies, and only falls back to converting the page when there's nothing better.
+    </p>
+    <ol class="sources">
+      <li>
+        <code class="src">&lt;page&gt;.md</code>
+        <h3>The page's Markdown twin</h3>
+        <p>
+          Many docs platforms serve each page as Markdown at the same path plus <code>.md</code>. When it's there,
+          that's the page, exactly as its authors wrote it.
+        </p>
+      </li>
+      <li>
+        <code class="src">llms.txt · llms-full.txt</code>
+        <h3>The site's own index</h3>
+        <p>
+          Checked at the site root and under the docs prefix. The index tells your agent what else exists. Files over
+          2&nbsp;MB aren't downloaded; the agent gets the link to fetch them itself.
+        </p>
+      </li>
+      <li>
+        <code class="src">HTML → Markdown</code>
+        <h3>The page itself, converted</h3>
+        <p>
+          No Markdown twin? The page's main content is converted to Markdown, and related pages from the site's
+          navigation are listed so the agent can fetch more.
+        </p>
+      </li>
+    </ol>
+    <p class="note">
+      Every package opens with its sources and one line telling the agent to treat the material as reference, not as
+      instructions.
+    </p>
+  </section>
+
+  <section class="wrap band split" aria-labelledby="library">
+    <div>
+      <p class="eyebrow">shared library</p>
+      <h2 id="library">The scoop that worked last time</h2>
+    </div>
+    <div class="prose">
+      <p>
+        When you scoop a site, the package can be shared to the library at{' '}
+        <a href="/library">scoop.md/library</a>. After your agent is done, tell scoop.md whether it{' '}
+        <strong>worked</strong> or <strong>didn't</strong>.
+      </p>
+      <p>
+        The next person on that site gets <span class="mark">the most recent scoop people confirmed worked</span>. A
+        scoop is only served once it has at least one "worked" and more "worked" than "didn't". If nothing qualifies,
+        the extension builds a fresh one from the live site.
+      </p>
+      <p>
+        Only public docs go in. The server re-fetches every source itself, with no cookies, and rejects anything that
+        doesn't match what the site serves. Nobody can slip their own instructions into a scoop.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap band split" aria-labelledby="privacy">
+    <div>
+      <p class="eyebrow">privacy</p>
+      <h2 id="privacy">It reads one tab, when you click</h2>
+    </div>
+    <div class="prose">
+      <p>
+        scoop.md only looks at the active tab, and only when you press the button. Pages that need you signed in still
+        reach your clipboard but are never uploaded: only material fetched without your cookies can be shared, and you
+        can turn sharing off. No accounts, no browsing history, nothing sold. <a href="/privacy">Full privacy policy</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap band split" aria-labelledby="oss">
+    <div>
+      <p class="eyebrow">open source</p>
+      <h2 id="oss">Read the code before you install it</h2>
+    </div>
+    <div class="prose">
+      <p>
+        The extension and the reference library server are open source on{' '}
+        <a href={GITHUB_URL}>GitHub</a>. You can point the extension at your own library, or leave the library URL
+        empty and use it entirely offline. Private libraries for teams' internal docs are coming later.
+      </p>
+      <pre class="shell"><code><span class="muted">$</span> git clone {GITHUB_URL}
+<span class="muted"># chrome://extensions → Developer mode → Load unpacked → extension/</span></code></pre>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-top: clamp(3rem, 8vw, 6.5rem);
+    padding-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .kicker {
+    font: 500 0.875rem/1.4 var(--font-mono);
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  .kicker code {
+    color: var(--ink);
+    font-size: 1em;
+  }
+
+  h1 {
+    font-size: clamp(3.25rem, 1.5rem + 9vw, 8.5rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    margin-bottom: 1.5rem;
+  }
+
+  .lede {
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+    line-height: 1.5;
+    max-width: 38ch;
+    color: var(--ink-2);
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .agents {
+    font: 400 0.875rem/1.5 var(--font-mono);
+  }
+
+  .agents span {
+    color: var(--ink-2);
+  }
+
+  .demo {
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+  }
+
+  .band {
+    border-top: 1px solid var(--rule);
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    padding-bottom: clamp(1rem, 3vw, 2rem);
+  }
+
+  .band h2 {
+    font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3rem);
+    margin-bottom: 1.25rem;
+  }
+
+  .intro {
+    max-width: 60ch;
+    color: var(--ink-2);
+    margin-bottom: 2.5rem;
+  }
+
+  .sources {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 2px solid var(--rule-strong);
+    counter-reset: src;
+  }
+
+  .sources li {
+    padding: 1.25rem 1.5rem 0.5rem 0;
+    counter-increment: src;
+    min-width: 0;
+  }
+
+  .sources li + li {
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--rule);
+  }
+
+  .sources li::before {
+    content: counter(src, decimal-leading-zero);
+    display: block;
+    font: 500 0.8rem/1 var(--font-mono);
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .src {
+    display: inline-block;
+    font-size: 0.95rem;
+    background: var(--mark);
+    color: var(--on-mark);
+    padding: 0.15em 0.4em;
+    margin-bottom: 0.9rem;
+  }
+
+  .sources h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sources p {
+    color: var(--ink-2);
+    font-size: 0.975rem;
+  }
+
+  .note {
+    margin-top: 1.5rem;
+    font: 400 0.9rem/1.5 var(--font-mono);
+    color: var(--muted);
+    max-width: 70ch;
+  }
+
+  .note::before {
+    content: '> ';
+    color: var(--accent);
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 1rem 3rem;
+  }
+
+  .split h2 {
+    max-width: 14ch;
+  }
+
+  .split .prose {
+    padding-top: 1.9rem;
+    color: var(--ink-2);
+  }
+
+  .split .prose strong {
+    color: var(--ink);
+  }
+
+  .shell {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.1rem;
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--mark);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  @media (max-width: 860px) {
+    .sources {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sources li,
+    .sources li + li {
+      padding: 1.25rem 0 0.25rem;
+      border-left: 0;
+    }
+
+    .sources li + li {
+      border-top: 1px solid var(--rule);
+    }
+
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .split .prose {
+      padding-top: 0;
+    }
+  }
+</style>

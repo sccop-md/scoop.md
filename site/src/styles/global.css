@@ -1,0 +1,296 @@
+/* scoop.md: ink on paper, one highlighter. Tokens first, then base, then
+   the few shared patterns pages reuse. */
+
+:root {
+  color-scheme: light dark;
+
+  --paper: #f3f4ef;
+  --sheet: #fbfbf8;
+  --ink: #12130f;
+  --ink-2: #3c3f37;
+  --muted: #62665c;
+  --rule: #d6d8cf;
+  --rule-strong: #12130f;
+  --mark: #c8f53c;        /* highlighter: backgrounds only, text on it is --on-mark */
+  --on-mark: #12130f;
+  --accent: #3b6100;      /* highlighter's readable cousin for text on paper */
+  --code-bg: #fbfbf8;
+  --syn-h: #12130f;
+  --syn-q: #62665c;
+  --syn-li: #3b6100;
+  --syn-url: #2b4fd6;
+  --bad: #b3261e;
+  --focus: #2b4fd6;
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --measure: 68ch;
+  --wrap: 1160px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0e100c;
+    --sheet: #151812;
+    --ink: #eceee6;
+    --ink-2: #c5c9bd;
+    --muted: #9ba192;
+    --rule: #2b2f27;
+    --rule-strong: #eceee6;
+    --mark: #c8f53c;
+    --on-mark: #12130f;
+    --accent: #c8f53c;
+    --code-bg: #121510;
+    --syn-h: #f4f6ee;
+    --syn-q: #9ba192;
+    --syn-li: #c8f53c;
+    --syn-url: #8fb0ff;
+    --bad: #ff8a80;
+    --focus: #8fb0ff;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1.0625rem/1.6 var(--font-body);
+  overflow-x: hidden;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+kbd {
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: var(--radius);
+  padding: 0.05em 0.35em;
+  background: var(--sheet);
+}
+
+::selection {
+  background: var(--mark);
+  color: var(--on-mark);
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--mark);
+  color: var(--on-mark);
+  padding: 0.5rem 0.75rem;
+  z-index: 10;
+}
+
+.skip:focus {
+  left: var(--gutter);
+}
+
+.wrap {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* Section eyebrow, written like a Markdown heading marker: "## how it works" */
+.eyebrow {
+  font: 500 0.8125rem/1 var(--font-mono);
+  color: var(--muted);
+  margin: 0 0 1rem;
+  letter-spacing: 0;
+}
+
+.eyebrow::before {
+  content: '## ';
+  color: var(--accent);
+}
+
+/* The highlighter stroke */
+.mark {
+  background: linear-gradient(transparent 12%, var(--mark) 12%, var(--mark) 88%, transparent 88%);
+  color: var(--on-mark);
+  padding: 0 0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font: 600 1rem/1 var(--font-body);
+  padding: 0.95em 1.25em;
+  border: 2px solid var(--rule-strong);
+  border-radius: var(--radius);
+  text-decoration: none;
+  background: var(--mark);
+  color: var(--on-mark);
+  box-shadow: 4px 4px 0 var(--rule-strong);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--rule-strong);
+}
+
+.btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--rule-strong);
+}
+
+.btn--quiet {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+  border-color: var(--rule);
+}
+
+.btn--quiet:hover {
+  border-color: var(--rule-strong);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Source-kind tag, e.g. `llms.txt` */
+.kind {
+  display: inline-block;
+  font: 500 0.78rem/1.4 var(--font-mono);
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--sheet);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.kind--page-md,
+.kind--llms,
+.kind--llms-full {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--rule));
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.prose h2 {
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 1.8rem);
+  margin: 2.5rem 0 0.75rem;
+}
+
+.prose h3 {
+  font-size: 1.15rem;
+  margin: 1.75rem 0 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25em;
+  margin: 0 0 1em;
+}
+
+.prose li {
+  margin: 0.3em 0;
+}
+
+.prose li::marker {
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.placeholder {
+  background: var(--mark);
+  color: var(--on-mark);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0 0.25em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

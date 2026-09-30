@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL, GITHUB_URL, LEGAL_ENTITY } from '../lib/links';
+
+export const prerender = true;
+
+const updated = '2026-09-30';
+---
+
+<Base title="Terms" description="Terms of use for the scoop.md extension, library and website.">
+  <article class="wrap page prose">
+    <p class="eyebrow">terms</p>
+    <h1>Terms of use</h1>
+    <p class="muted">Last updated <time datetime={updated}>{updated}</time></p>
+
+    <p>
+      These terms cover the scoop.md extension, the shared library at <code>api.scoop.md</code> and this website, run by{' '}
+      <span class="placeholder">{LEGAL_ENTITY}</span>. By using them you agree to these terms. How we handle data is in
+      the <a href="/privacy">privacy policy</a>.
+    </p>
+
+    <h2>Using scoop.md</h2>
+    <p>You may use scoop.md for any lawful purpose. Don't:</p>
+    <ul>
+      <li>share material that isn't public documentation, or that you have no right to share;</li>
+      <li>try to get instructions, malware or anything misleading into a scoop;</li>
+      <li>cast votes or reports in bulk, rotate install IDs, or otherwise game the "worked" signal or rate limits;</li>
+      <li>load the library or this website in ways that degrade them for others, or probe them for vulnerabilities without permission;</li>
+      <li>use scoop.md to break a documentation site's own terms.</li>
+    </ul>
+    <p>We may block installs or addresses that do these things, and remove what they shared.</p>
+
+    <h2>Content belongs to its publishers</h2>
+    <p>
+      Documentation in the library is copied from public pages and belongs to the people who published it. Every scoop
+      keeps the URL of each source so the publisher is credited and the original is one click away. We don't claim
+      ownership of it, and sharing a scoop doesn't give anyone rights to it beyond what its publisher allows.
+    </p>
+    <p>
+      By sharing a scoop, voting or reporting, you let us store and display that contribution to run the library.
+    </p>
+
+    <h2>Takedowns</h2>
+    <p>
+      Use the report button in the extension, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the
+      site and what's wrong. We review reports and remove scoops that are inaccurate, harmful or shared without the
+      right to share them. Publishers can ask us to stop storing scoops for their site altogether.
+    </p>
+
+    <h2>The code</h2>
+    <p>
+      The extension's source is on <a href={GITHUB_URL}>GitHub</a> under the license in that repository. Those license
+      terms govern the code; these terms govern the hosted library and website.
+    </p>
+
+    <h2>What your agent does is up to you</h2>
+    <p>
+      A scoop is reference material. Your coding agent decides what to do with it, and you decide what to run, merge and
+      ship. Review what it writes.
+    </p>
+
+    <h2>No warranty</h2>
+    <p>
+      scoop.md is provided "as is", without warranties of any kind. Scoops can be incomplete, out of date or wrong, and
+      the library may be unavailable. To the extent the law allows, we aren't liable for losses arising from using
+      scoop.md or anything it copies.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      We may update these terms. The date above changes when we do; continuing to use scoop.md means you accept the
+      update.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      <span class="placeholder">{LEGAL_ENTITY}</span>, <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 1.5rem + 4vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 0.75rem;
+  }
+</style>

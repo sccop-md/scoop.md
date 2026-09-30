@@ -1,0 +1,36 @@
+---
+// Shared by the 404 page and /[site] for paths that aren't hostnames.
+---
+
+<div class="wrap page">
+  <p class="code"><span aria-hidden="true">&gt;</span> 404: nothing to scoop here</p>
+  <h1>This page doesn't exist.</h1>
+  <p class="lede">
+    Looking for a site's scoop? Library pages live at <code>scoop.md/&lt;hostname&gt;</code>, like{' '}
+    <a href="/docs.stripe.com">scoop.md/docs.stripe.com</a>.
+  </p>
+  <p><a href="/">Home</a> · <a href="/library">Library</a></p>
+</div>
+
+<style>
+  .page {
+    padding-top: clamp(3rem, 8vw, 6rem);
+  }
+
+  .code {
+    font: 500 0.9rem/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 1.5rem + 4vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.25rem;
+  }
+
+  .lede {
+    max-width: 52ch;
+    color: var(--ink-2);
+  }
+</style>

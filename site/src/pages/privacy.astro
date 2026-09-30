@@ -1,0 +1,157 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL, LEGAL_ENTITY } from '../lib/links';
+
+export const prerender = true;
+
+const updated = '2026-09-30';
+---
+
+<Base title="Privacy" description="What the scoop.md extension reads, what leaves your device, and what the library keeps.">
+  <article class="wrap page prose">
+    <p class="eyebrow">privacy</p>
+    <h1>Privacy policy</h1>
+    <p class="muted">Last updated <time datetime={updated}>{updated}</time></p>
+
+    <p>
+      This policy covers the scoop.md Chrome extension, the shared library at <code>api.scoop.md</code>, and this
+      website. They are run by <span class="placeholder">{LEGAL_ENTITY}</span> ("we"). Questions go to{' '}
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+    </p>
+
+    <h2>The short version</h2>
+    <ul>
+      <li>The extension reads only the tab you're on, and only when you click the button or press its shortcut.</li>
+      <li>Anything that needs you signed in stays on your device. Only documentation fetched without your cookies can be shared.</li>
+      <li>Sharing can be turned off. The library can be turned off entirely.</li>
+      <li>No accounts. No browsing history. No ads, no trackers, and we don't sell data.</li>
+      <li>IP addresses are used for rate limiting and not stored.</li>
+    </ul>
+
+    <h2>What the extension reads</h2>
+    <p>
+      When you click <strong>Scoop to agent</strong>, the extension reads the active tab's address, title and page
+      content. It doesn't run in the background, doesn't see other tabs, and doesn't read your browsing history. It
+      writes the package to your clipboard; it never reads your clipboard.
+    </p>
+    <p>
+      To find documentation the site already publishes, the extension requests files like <code>&lt;page&gt;.md</code>,{' '}
+      <code>llms.txt</code>, <code>llms-full.txt</code> and the page itself directly from that site, without your
+      cookies. Those requests go to the documentation site, not to us. This is why the extension asks for access to all
+      sites: it can't know in advance which docs you'll scoop.
+    </p>
+
+    <h2>What stays on your device</h2>
+    <ul>
+      <li>The package on your clipboard.</li>
+      <li>
+        Your settings (library address, sharing on or off), stored in Chrome's extension storage. If you use Chrome sync,
+        Chrome syncs them with your Google account.
+      </li>
+      <li>A random install ID the extension creates on first run. It identifies an installation, not a person.</li>
+      <li>Anything from a page that only rendered because you're signed in. It reaches your clipboard and nowhere else.</li>
+    </ul>
+
+    <h2>What leaves your device</h2>
+    <p>Only when the library is on (it is by default, at <code>api.scoop.md</code>):</p>
+    <h3>Every click</h3>
+    <p>
+      The site's hostname (for example <code>docs.stripe.com</code>), so the library can return a scoop for it. Not the
+      page address, not the page content.
+    </p>
+    <h3>When sharing is on and the material was fetched without cookies</h3>
+    <ul>
+      <li>The public documentation sections in the package, and the URL each came from.</li>
+      <li>The page's address and title.</li>
+      <li>Related links from the site's navigation.</li>
+      <li>Your install ID.</li>
+    </ul>
+    <p>
+      If any part of the package came from your signed-in view of the page, nothing is shared. The library then
+      re-fetches every source itself, without cookies, and rejects anything that doesn't match what the site serves
+      publicly.
+    </p>
+    <h3>When you vote or report</h3>
+    <ul>
+      <li>"It worked" or "It didn't": the scoop's ID, your vote and your install ID.</li>
+      <li>A report: the scoop's ID, the reason, anything you type in the details box, and your install ID.</li>
+    </ul>
+    <p>
+      Every request also carries what any web request does: your IP address and your browser's user agent, plus the
+      extension's version.
+    </p>
+
+    <h2>What the library keeps</h2>
+    <ul>
+      <li>
+        <strong>Shared scoops</strong>: the documentation text, source URLs, page address and title, related links, the
+        time it was shared and the sharer's install ID. Scoops and their vote counts are public, on this website and
+        through the API. Install IDs are never published.
+      </li>
+      <li><strong>Votes</strong>: scoop ID, install ID, the vote and when it was cast. One per install; a new vote replaces the old one.</li>
+      <li><strong>Reports</strong>: as submitted, until they are resolved and for our records afterwards.</li>
+      <li>
+        <strong>Request logs</strong>: method, route, status, duration and extension version. No IP addresses, install
+        IDs or content.
+      </li>
+    </ul>
+    <p>
+      IP addresses are used only to apply rate limits and are not stored. Scoops stay until they are taken down. When one
+      is taken down, its content is deleted and a record that it existed is kept for audit.
+    </p>
+    <p>
+      We run on Cloudflare, which processes requests to this website and the library on our behalf.
+    </p>
+
+    <h2>This website</h2>
+    <p>
+      scoop.md sets no cookies and runs no analytics. Fonts are served from this site. The library pages show only the
+      public data described above.
+    </p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>Turn sharing off in the extension's options. Scooping still works; nothing is uploaded.</li>
+      <li>Clear the library address in the options to use the extension with no network calls to us at all.</li>
+      <li>Uninstalling the extension deletes its settings and install ID from your browser.</li>
+      <li>
+        To have data linked to your install ID deleted, email us. We don't know who you are, so we may need the install
+        ID from your extension to find it.
+      </li>
+    </ul>
+
+    <h2>Takedowns</h2>
+    <p>
+      If a scoop contains something it shouldn't (your content, wrong or harmful material), use the report button in
+      the extension or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the site and scoop. Publishers
+      can also ask us to stop storing scoops for their site.
+    </p>
+
+    <h2>Children</h2>
+    <p>scoop.md is a developer tool and isn't directed at children.</p>
+
+    <h2>Changes</h2>
+    <p>
+      If we change what's collected, we'll update this page and its date before the change ships. Material changes will
+      be noted in the extension's release notes.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      <span class="placeholder">{LEGAL_ENTITY}</span>, <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 1.5rem + 4vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 0.75rem;
+  }
+</style>

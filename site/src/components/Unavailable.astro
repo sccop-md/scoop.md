@@ -1,0 +1,41 @@
+---
+// Shown when the library API can't be reached. The extension still works
+// without it, so say that too.
+interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+---
+
+<div class="unavailable" role="status">
+  <p class="code"><span aria-hidden="true">&gt;</span> GET {path} … no answer</p>
+  <h2>The library is unavailable right now</h2>
+  <p>
+    We couldn't reach the shared library. Try again in a minute. The extension keeps working without it: it builds a
+    fresh scoop from the live site.
+  </p>
+</div>
+
+<style>
+  .unavailable {
+    border: 1.5px dashed var(--rule-strong);
+    border-radius: 6px;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    max-width: 44rem;
+  }
+
+  .code {
+    font: 500 0.85rem/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  p:last-child {
+    margin: 0;
+    color: var(--ink-2);
+  }
+</style>
