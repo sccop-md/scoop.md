@@ -1,7 +1,6 @@
 // Read-only client for the library API (docs/BACKEND.md §5). Only the website's
 // two endpoints are used: GET /v1/sites and GET /v1/sites/:site.
 
-import { env } from 'cloudflare:workers';
 
 export type SourceKind = 'page-md' | 'llms' | 'llms-full' | 'page-html';
 
@@ -40,11 +39,11 @@ export type Result<T> = { ok: true; data: T } | { ok: false; reason: 'not_found'
 
 const DEFAULT_API = 'https://api.scoop.md';
 
-// The Worker's PUBLIC_API_URL var (wrangler.jsonc; .dev.vars overrides it
-// locally), otherwise production.
+// PUBLIC_API_URL from the Vercel project's environment at runtime, else the
+// value inlined at build time, else production.
 export function apiBase(): string {
-  const url = (env as Record<string, unknown>)?.PUBLIC_API_URL;
-  return (typeof url === 'string' && url ? url : DEFAULT_API).replace(/\/+$/, '');
+  const url = process.env.PUBLIC_API_URL || import.meta.env.PUBLIC_API_URL;
+  return (url || DEFAULT_API).replace(/\/+$/, '');
 }
 
 async function get<T>(path: string): Promise<Result<T>> {
@@ -52,8 +51,6 @@ async function get<T>(path: string): Promise<Result<T>> {
     const res = await fetch(apiBase() + path, {
       headers: { accept: 'application/json', 'x-scoop-client': 'site' },
       signal: AbortSignal.timeout(5000),
-      // Cloudflare edge cache for the subrequest; ignored outside Workers.
-      cf: { cacheTtl: 60, cacheEverything: true },
     } as RequestInit);
     if (res.status === 404) return { ok: false, reason: 'not_found' };
     if (!res.ok) return { ok: false, reason: 'unavailable' };

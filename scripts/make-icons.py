@@ -1,45 +1,41 @@
-"""Draws the scoop.md toolbar icons: an ice-cream scoop on a cone.
+"""Builds every scoop.md icon from the master artwork in brand/icon-source.png.
 
-Usage: python3 scripts/make-icons.py   (needs Pillow; writes extension/icons/)
+Usage: python3 scripts/make-icons.py   (needs Pillow)
+
+Writes the extension toolbar icons (rounded corners, 16-128 px) and the
+website's favicon, apple-touch icon and logo image.
 """
 from pathlib import Path
 from PIL import Image, ImageDraw
 
-OUT = Path(__file__).resolve().parent.parent / "extension" / "icons"
-BG = (24, 24, 27, 255)        # zinc-900
-SCOOP = (244, 114, 182, 255)  # pink-400
-SHINE = (251, 207, 232, 255)  # pink-200
-CONE = (245, 158, 11, 255)    # amber-500
-WAFFLE = (180, 83, 9, 255)    # amber-700
-S = 512                       # drawn large, then downsampled
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / "brand" / "icon-source.png"
+EXT = ROOT / "extension" / "icons"
+SITE = ROOT / "site" / "public"
+RADIUS = 0.22  # corner radius as a share of the side, like a macOS app icon
 
 
-def draw():
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle([0, 0, S - 1, S - 1], radius=112, fill=BG)
-    # Cone: a downward triangle under the scoop.
-    top, tip = 268, 462
-    cone = [(150, top), (362, top), (256, tip)]
-    d.polygon(cone, fill=CONE)
-    for i in range(1, 4):  # waffle lines, only visible at larger sizes
-        y = top + i * (tip - top) / 4
-        half = (362 - 150) / 2 * (1 - i / 4)
-        d.line([(256 - half, y), (256 + half, y)], fill=WAFFLE, width=10)
-    # Scoop: a ball with a scalloped rim over the cone.
-    d.ellipse([122, 70, 390, 318], fill=SCOOP)
-    for cx in (152, 204, 256, 308, 360):
-        d.ellipse([cx - 34, 262, cx + 34, 318], fill=SCOOP)
-    d.ellipse([176, 116, 232, 162], fill=SHINE)
-    return img
+def rounded(img, size):
+    big = size * 4  # draw the mask large so the downsampled corners are smooth
+    mask = Image.new("L", (big, big), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, big - 1, big - 1], radius=int(big * RADIUS), fill=255)
+    out = img.resize((size, size), Image.LANCZOS).convert("RGBA")
+    out.putalpha(mask.resize((size, size), Image.LANCZOS))
+    return out
 
 
 def main():
-    OUT.mkdir(parents=True, exist_ok=True)
-    big = draw()
+    src = Image.open(SOURCE).convert("RGB")
+    EXT.mkdir(parents=True, exist_ok=True)
     for size in (16, 32, 48, 128):
-        big.resize((size, size), Image.LANCZOS).save(OUT / f"icon{size}.png", optimize=True)
-        print(f"wrote {OUT / f'icon{size}.png'}")
+        rounded(src, size).save(EXT / f"icon{size}.png", optimize=True)
+    if SITE.exists():
+        rounded(src, 32).save(SITE / "favicon.png", optimize=True)
+        rounded(src, 192).save(SITE / "icon-192.png", optimize=True)
+        rounded(src, 512).save(SITE / "icon-512.png", optimize=True)
+        # iOS rounds the corners itself, so the touch icon stays square.
+        src.resize((180, 180), Image.LANCZOS).save(SITE / "apple-touch-icon.png", optimize=True)
+    print("icons written")
 
 
 if __name__ == "__main__":

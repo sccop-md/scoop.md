@@ -1,20 +1,21 @@
 /* Layout: brand bar, tab row with the Copy action, then a list of sources as avatar rows. */
+/* Colours come from the app icon (brand/icon-source.png): deep violet ground, bright violet glow, lavender layer. */
 :root {
-  --bar: #12130f; --bar-fg: #ffffff; --mark: #c8f53c;
-  --bg: #ffffff; --fg: #1d1f1a; --muted: #6b6f64; --line: #e6e8e1; --tint: #f3f8e4;
-  --link: #3b6100; --avatar: #f2f3ef; --ok: #2f6b00; --warn: #9a5b00; --err: #b3261e; --focus: #2b4fd6;
+  --bar: #3b13a1; --bar-2: #5a19cf; --bar-fg: #ffffff; --mark: #c1aaf0;
+  --bg: #ffffff; --fg: #1c1530; --muted: #6a6380; --line: #e7e3f0; --tint: #f2edfd;
+  --link: #4915bb; --avatar: #f3f0fa; --ok: #2e7d32; --warn: #9a5b00; --err: #b3261e; --focus: #671ce1;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bar: #0b0c09; --bar-fg: #f4f5f0; --bg: #16181a; --fg: #eceee6; --muted: #9ba192; --line: #2b2f27;
-    --tint: #20261a; --link: #c8f53c; --avatar: #23271f; --ok: #9fd65a; --warn: #f0b64d; --err: #f28b82; --focus: #8ab4ff;
+    --bar: #2a0d78; --bar-2: #4515a8; --bar-fg: #f6f2ff; --bg: #14101f; --fg: #ece8f7; --muted: #a49cbd; --line: #2d2640;
+    --tint: #231a3d; --link: #c1aaf0; --avatar: #221b33; --ok: #8fd694; --warn: #f0b64d; --err: #f28b82; --focus: #c1aaf0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bar: #0b0c09; --bar-fg: #f4f5f0; --bg: #16181a; --fg: #eceee6; --muted: #9ba192; --line: #2b2f27;
-  --tint: #20261a; --link: #c8f53c; --avatar: #23271f; --ok: #9fd65a; --warn: #f0b64d; --err: #f28b82; --focus: #8ab4ff;
+  --bar: #2a0d78; --bar-2: #4515a8; --bar-fg: #f6f2ff; --bg: #14101f; --fg: #ece8f7; --muted: #a49cbd; --line: #2d2640;
+  --tint: #231a3d; --link: #c1aaf0; --avatar: #221b33; --ok: #8fd694; --warn: #f0b64d; --err: #f28b82; --focus: #c1aaf0;
   color-scheme: dark;
 }
 
@@ -25,7 +26,7 @@ svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* Brand bar */
-.bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bar); color: var(--bar-fg); }
+.bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: radial-gradient(120% 160% at 50% -40%, var(--bar-2), var(--bar) 70%); color: var(--bar-fg); }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
 .brand img { border-radius: 7px; }
 .brand .ext { color: var(--mark); font-weight: 600; }
@@ -43,12 +44,12 @@ svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
 /* Tabs */
 .tabs { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
 .tabs [role=tab] { padding: 12px 18px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: 600 12px/1 inherit; font-family: inherit; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
-.tabs [role=tab][aria-selected=true] { background: var(--tint); color: var(--fg); border-bottom-color: var(--fg); }
+.tabs [role=tab][aria-selected=true] { background: var(--tint); color: var(--link); border-bottom-color: var(--link); }
 #actions { margin-left: auto; display: flex; align-items: center; padding-right: 14px; }
 
 /* Buttons */
 button { font: inherit; color: inherit; }
-.outline { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1.5px solid var(--fg); border-radius: 6px; background: none; font-weight: 600; cursor: pointer; }
+.outline { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1.5px solid var(--link); border-radius: 6px; color: var(--link); background: none; font-weight: 600; cursor: pointer; }
 .outline:hover { background: var(--tint); }
 .outline svg { width: 16px; height: 16px; }
 .small { padding: 4px 10px; font-size: 12px; }

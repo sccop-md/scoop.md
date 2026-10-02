@@ -1,6 +1,6 @@
 # scoop.md website
 
-The site at https://scoop.md: landing page, the shared library browser, privacy policy and terms. Astro 7 with the Cloudflare adapter, deployed as a Worker (`scoop-md-site`) with static assets.
+The site at https://scoop.md: landing page, the shared library browser, privacy policy and terms. Astro 7 with the Vercel adapter, deployed to the Vercel project `scoop-md-site`. Static pages are served from Vercel's CDN; library pages render in a Vercel Function.
 
 | Route | Rendering | Data |
 |---|---|---|
@@ -11,19 +11,18 @@ The site at https://scoop.md: landing page, the shared library browser, privacy 
 
 Static routes and files win over `/<site>`. Anything that isn't a hostname gets the 404 page without calling the API; `Docs.Stripe.com` and `www.` hosts 301 to the normalised site. When the API says 404 the page answers 404 ("No scoops for … yet"); when it's unreachable, library pages answer 503 with a "library unavailable" notice instead of failing.
 
-Library pages send `Cache-Control: public, max-age=60, s-maxage=60`, and API subrequests are cached at the edge for 60 s (`cf.cacheTtl`). Errors are cached for 10 s at most.
+Library pages send `Cache-Control: public, max-age=60, s-maxage=60`, which Vercel's CDN honours. Errors are cached for 10 s at most.
 
 ## Commands
 
 ```sh
 npm install
-npm run dev       # http://localhost:4321 (runs in workerd, like production)
-npm run build     # dist/client (assets) + dist/server (Worker)
-npm run preview   # serve the production build locally in workerd
-npm run deploy    # astro build && wrangler deploy
+npm run dev       # http://localhost:4321
+npm run build     # .vercel/output (Build Output API)
+npm run deploy    # vercel deploy --prod
 ```
 
-`wrangler deploy` needs `wrangler login` (or `CLOUDFLARE_API_TOKEN`) with access to the account that owns the `scoop.md` zone.
+Deploys need `vercel login` with access to the project. Pushes to `main` also deploy once the project is connected to the GitHub repo (root directory `site`).
 
 ### Against a local library
 
@@ -35,18 +34,22 @@ PORT=8787 ALLOW_LOCALHOST=1 node server/server.js
 PUBLIC_API_URL=http://localhost:8787 npm run dev
 ```
 
-`npm run dev` sets `CLOUDFLARE_INCLUDE_PROCESS_ENV=true` so shell variables reach the Worker's `env`. For `npm run preview`, prefix it the same way, or put `PUBLIC_API_URL=http://localhost:8787` in `site/.dev.vars` (gitignored).
+Shell variables reach the dev server directly; `site/.env` (gitignored) works too.
 
 ## Environment
 
 | Variable | When it's read | Default | Purpose |
 |---|---|---|---|
-| `PUBLIC_API_URL` | Runtime (Worker var) | `https://api.scoop.md` | Library API base URL. Set in `wrangler.jsonc` `vars`; override locally as above. |
-| `PUBLIC_CHROME_STORE_URL` | Build time | unset | Chrome Web Store listing. When unset, the hero button reads "Coming soon to the Chrome Web Store" and links to GitHub. Set it in the build environment, e.g. `PUBLIC_CHROME_STORE_URL=https://chromewebstore.google.com/detail/… npm run deploy`, or in Workers Builds settings. |
+| `PUBLIC_API_URL` | Runtime, else build time | `https://api.scoop.md` | Library API base URL. Set it in the Vercel project's environment variables to point at staging. |
+| `PUBLIC_CHROME_STORE_URL` | Build time | unset | Chrome Web Store listing. When unset, the hero button reads "Coming soon to the Chrome Web Store" and links to GitHub. Set it in the Vercel project's environment variables and redeploy. |
 
 ## Domain
 
-`wrangler.jsonc` attaches the Worker to `scoop.md` as a [custom domain](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/); Cloudflare creates the DNS record and certificate on first deploy. The zone must be on the same Cloudflare account.
+DNS for scoop.md stays on Cloudflare; the site is served by Vercel.
+
+1. In Vercel: project `scoop-md-site` → Settings → Domains → add `scoop.md` and `www.scoop.md` (redirect www to the apex).
+2. In Cloudflare DNS for scoop.md, create the records Vercel shows. Typically `A @ 76.76.21.21` and `CNAME www cname.vercel-dns.com`, both **DNS only** (grey cloud) so Vercel can issue the certificate.
+3. `api.scoop.md` is separate: it points at the Cloudflare Worker (docs/BACKEND.md), so leave it as Cloudflare configures it.
 
 ### Redirect www.scoop.md and anydoc.md
 

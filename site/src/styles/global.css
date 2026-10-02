@@ -1,26 +1,26 @@
-/* scoop.md: ink on paper, one highlighter. Tokens first, then base, then
+/* scoop.md: ink on paper, one violet highlighter taken from the app icon. Tokens first, then base, then
    the few shared patterns pages reuse. */
 
 :root {
   color-scheme: light dark;
 
-  --paper: #f3f4ef;
-  --sheet: #fbfbf8;
-  --ink: #12130f;
-  --ink-2: #3c3f37;
-  --muted: #62665c;
-  --rule: #d6d8cf;
-  --rule-strong: #12130f;
-  --mark: #c8f53c;        /* highlighter: backgrounds only, text on it is --on-mark */
-  --on-mark: #12130f;
-  --accent: #3b6100;      /* highlighter's readable cousin for text on paper */
-  --code-bg: #fbfbf8;
-  --syn-h: #12130f;
-  --syn-q: #62665c;
-  --syn-li: #3b6100;
+  --paper: #f6f4fb;
+  --sheet: #fdfcff;
+  --ink: #1c1530;
+  --ink-2: #3d3456;
+  --muted: #6a6380;
+  --rule: #e2dcef;
+  --rule-strong: #1c1530;
+  --mark: #671ce1;        /* the icon's bright violet: backgrounds only, text on it is --on-mark */
+  --on-mark: #ffffff;
+  --accent: #4915bb;      /* the icon's "S" violet, for text on paper */
+  --code-bg: #fdfcff;
+  --syn-h: #1c1530;
+  --syn-q: #6a6380;
+  --syn-li: #4915bb;
   --syn-url: #2b4fd6;
   --bad: #b3261e;
-  --focus: #2b4fd6;
+  --focus: #671ce1;
 
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
@@ -34,25 +34,26 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0e100c;
-    --sheet: #151812;
-    --ink: #eceee6;
-    --ink-2: #c5c9bd;
-    --muted: #9ba192;
-    --rule: #2b2f27;
-    --rule-strong: #eceee6;
-    --mark: #c8f53c;
-    --on-mark: #12130f;
-    --accent: #c8f53c;
-    --code-bg: #121510;
-    --syn-h: #f4f6ee;
-    --syn-q: #9ba192;
-    --syn-li: #c8f53c;
-    --syn-url: #8fb0ff;
+    --paper: #110b22;
+    --sheet: #1a1230;
+    --ink: #efeaff;
+    --ink-2: #cdc4e6;
+    --muted: #a49cbd;
+    --rule: #2d2545;
+    --rule-strong: #efeaff;
+    --mark: #7b3ff0;
+    --on-mark: #ffffff;
+    --accent: #c1aaf0;
+    --code-bg: #150e28;
+    --syn-h: #f6f2ff;
+    --syn-q: #a49cbd;
+    --syn-li: #c1aaf0;
+    --syn-url: #9db7ff;
     --bad: #ff8a80;
-    --focus: #8fb0ff;
+    --focus: #c1aaf0;
   }
 }
+
 
 *,
 *::before,
