@@ -4,12 +4,6 @@ import { scoopPage, currentPageSection } from './lib/scoop.js';
 import { DEFAULT_LIBRARY, createLibrary, shareBody, notSharedReason } from './lib/library.js';
 
 const DEFAULTS = { libraryUrl: DEFAULT_LIBRARY, share: true };
-const KIND = {
-  'page-md': ['MD', 'Page Markdown'],
-  'page-html': ['</>', 'Page, converted from HTML'],
-  llms: ['TXT', 'llms.txt index'],
-  'llms-full': ['ALL', 'llms-full.txt'],
-};
 const $ = (id) => document.getElementById(id);
 
 let settings;
@@ -27,51 +21,6 @@ function note(id, text, cls = '') {
   $(id).textContent = text;
   $(id).className = cls;
   $(id).hidden = !text;
-}
-
-function showSources(sections) {
-  $('sources').replaceChildren(...sections.map((s) => {
-    const [glyph, name] = KIND[s.kind] ?? ['DOC', s.kind];
-    const li = document.createElement('li');
-    const avatar = Object.assign(document.createElement('span'), { className: 'avatar', textContent: glyph });
-    avatar.setAttribute('aria-hidden', 'true');
-    const text = Object.assign(document.createElement('div'), { className: 'info' });
-    const link = Object.assign(document.createElement('a'), {
-      href: s.url, target: '_blank', rel: 'noreferrer',
-      textContent: s.label.replace(/^This page: /, ''), title: s.url,
-    });
-    const size = s.content == null ? 'link only, too large to copy' : kb(s.content);
-    text.append(link, Object.assign(document.createElement('span'), { className: 'meta', textContent: `${name} · ${size}` }));
-    li.append(avatar, text);
-    return li;
-  }));
-  $('sources').hidden = !sections.length;
-  $('sources-title').hidden = !sections.length;
-}
-
-function showLibrary(site, shared, reachable) {
-  $('lib-site').textContent = site;
-  $('lib-link').href = `https://scoop.md/${encodeURIComponent(site)}`;
-  if (!settings.libraryUrl) {
-    $('lib-status').textContent = 'Library is off';
-    $('lib-meta').textContent = 'Set a library URL in Settings to use shared scoops.';
-  } else if (!reachable) {
-    $('lib-status').textContent = 'Library unavailable';
-    $('lib-meta').textContent = 'Your copy was built from this page instead.';
-  } else if (shared) {
-    $('lib-status').textContent = `Shared scoop worked for ${plural(shared.worked, 'person', 'people')}`;
-    $('lib-meta').textContent = `${plural(shared.sections.length, 'source')}${shared.lastWorkedAt ? ` · last confirmed ${new Date(shared.lastWorkedAt).toLocaleDateString()}` : ''}`;
-  } else {
-    $('lib-status').textContent = 'No shared scoop yet';
-    $('lib-meta').textContent = 'Yours becomes the first once your agent confirms it worked.';
-  }
-}
-
-function selectTab(name) {
-  for (const t of ['scoop', 'library']) {
-    $(`tab-${t}`).setAttribute('aria-selected', String(t === name));
-    $(`panel-${t}`).hidden = t !== name;
-  }
 }
 
 async function applyTheme(theme) {
@@ -108,9 +57,13 @@ async function writeClipboard(text) {
 
 async function copy(text) {
   clipboardText = text;
-  $('actions').hidden = false;
+  $('preview').value = text;
+  $('copy').disabled = false;
   return writeClipboard(text);
 }
+
+// Clicking the text selects all of it, for people who prefer to copy by hand.
+$('preview').onfocus = () => $('preview').select();
 
 function copied(ok) {
   if (ok) status('Copied. Paste it into your agent.');
@@ -141,7 +94,8 @@ function scoopCurrentTab() {
 }
 
 async function run({ skipLibrary = false } = {}) {
-  status('Finding docs for this page…', 'busy');
+  status('Scooping this page…', 'busy');
+  $('copy').disabled = true;
   note('share', '');
   showFeedback(null);
   $('rebuild').hidden = true;
@@ -153,17 +107,14 @@ async function run({ skipLibrary = false } = {}) {
   local.catch(() => {});
   const best = skipLibrary ? null : await library.best(site);
   const shared = best?.ok ? best.data?.skill : null;
-  if (!skipLibrary) showLibrary(site, shared, !!best?.ok);
 
   if (shared?.sections?.length) {
     const current = currentPageSection(await local.catch(() => null));
     const sections = withCurrentPage(shared.sections, current);
     const text = buildPackage({ site, pageUrl: tab.url, sections, relatedLinks: shared.relatedLinks ?? [] });
     const ok = await copy(text);
-    showSources(sections);
     copied(ok);
-    note('summary', `${kb(text)} from the shared library. Worked for ${plural(shared.worked, 'person', 'people')}` +
-      `${shared.failed ? `, didn't for ${shared.failed}` : ''}.`);
+    note('summary', `${kb(text)} · shared, worked for ${plural(shared.worked, 'person', 'people')}`);
     $('rebuild').hidden = false;
     showFeedback(shared.id);
     return;
@@ -173,28 +124,27 @@ async function run({ skipLibrary = false } = {}) {
   if (!scoop.sections.length) throw new Error('Could not find any documentation text on this page.');
   const text = buildPackage({ site, pageUrl: scoop.pageUrl, sections: scoop.sections, relatedLinks: scoop.relatedLinks });
   const ok = await copy(text);
-  showSources(scoop.sections);
   copied(ok);
-  note('summary', `${kb(text)} from ${plural(scoop.sections.length, 'source')} on ${site}, built from this page.`);
+  note('summary', `${kb(text)} · ${plural(scoop.sections.length, 'source')} on ${site}`);
   await share(scoop);
 }
 
 async function share(scoop) {
   if (!settings.libraryUrl) return;
-  if (!settings.share) return note('share', 'Not shared: sharing is off in Settings.');
-  if (!scoop.isPublic) return note('share', 'Not shared: this page only loads with your login, so it stays on your machine.');
+  if (!settings.share) return note('share', 'Not shared: sharing is off.');
+  if (!scoop.isPublic) return note('share', 'Not shared: this page only loads with your login.');
 
   note('share', 'Sharing with the library…');
   const res = await library.share(shareBody(scoop));
   if (!res.ok) return note('share', `Not shared: ${notSharedReason(res.error, scoop.sections)}`, 'warn');
-  note('share', res.data.duplicate ? 'Already in the library. Vote below once your agent is done.' : 'Shared with the library. Vote below once your agent is done.');
+  note('share', res.data.duplicate ? 'Already in the library.' : 'Shared with the library.');
   showFeedback(res.data.id);
 }
 
 async function vote(worked) {
   const res = await library.feedback(skillId, worked);
   note('voted', res.ok
-    ? `Thanks. So far it worked for ${plural(res.data.worked, 'person', 'people')} and didn't for ${res.data.failed}.`
+    ? `Thanks. It worked for ${plural(res.data.worked, 'person', 'people')} and didn't for ${res.data.failed}.`
     : "Couldn't record your vote. Try again in a moment.");
 }
 
@@ -225,8 +175,6 @@ async function intro() {
 
 const fail = (e) => status(e?.message || String(e), 'err');
 
-$('tab-scoop').onclick = () => selectTab('scoop');
-$('tab-library').onclick = () => selectTab('library');
 $('theme').onclick = async () => {
   const dark = document.documentElement.dataset.theme
     ? document.documentElement.dataset.theme === 'dark'
@@ -242,6 +190,8 @@ $('share-toggle').onchange = async (e) => {
 $('copy').onclick = async () => {
   if (!(await writeClipboard(clipboardText))) return status("Couldn't copy. Try again.", 'err');
   status('Copied again.');
+  $('copy-label').textContent = 'Copied';
+  setTimeout(() => { $('copy-label').textContent = 'Copy for your agent'; }, 1500);
 };
 $('rebuild').onclick = () => run({ skipLibrary: true }).catch(fail);
 $('settings').onclick = (e) => { e.preventDefault(); chrome.runtime.openOptionsPage(); };

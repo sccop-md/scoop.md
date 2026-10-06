@@ -8,7 +8,7 @@
 <body>
   <header class="bar">
     <div class="brand">
-      <img src="icons/icon48.png" alt="" width="28" height="28">
+      <img src="icons/icon48.png" alt="" width="26" height="26">
       <span>scoop<span class="ext">.md</span></span>
     </div>
     <div class="tools">
@@ -25,72 +25,56 @@
     </div>
   </header>
 
-  <nav class="tabs" role="tablist">
-    <button role="tab" id="tab-scoop" aria-selected="true" aria-controls="panel-scoop">Scoop</button>
-    <button role="tab" id="tab-library" aria-selected="false" aria-controls="panel-library">Library</button>
-    <div id="actions" hidden>
-      <button id="copy" class="outline" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
-        Copy
-      </button>
-    </div>
-  </nav>
-
   <main>
-    <section id="panel-scoop" role="tabpanel" aria-labelledby="tab-scoop">
-      <div id="intro" class="notice" hidden>
-        <p>scoop.md shares the public docs you scoop with the library, so the next person on this site gets a package that worked. Nothing behind a login is shared. Use the switch above to turn sharing off.</p>
-        <button id="intro-ok" class="text" type="button">Got it</button>
-      </div>
+    <div id="intro" class="intro" hidden>
+      <span>Public docs you scoop are shared so others get a version that worked.</span>
+      <button id="intro-ok" class="x" type="button" aria-label="Dismiss">×</button>
+    </div>
 
-      <p id="status" class="busy" role="status">Finding docs for this page…</p>
+    <div class="head">
+      <p id="status" class="busy" role="status">Scooping this page…</p>
       <p id="summary" class="meta" hidden></p>
+    </div>
 
-      <h2 id="sources-title" hidden>Sources</h2>
-      <ul id="sources" class="items" hidden></ul>
+    <textarea id="preview" readonly spellcheck="false" aria-label="Text to paste into your agent" placeholder="The docs for this page will appear here."></textarea>
 
-      <p id="share" class="meta" hidden></p>
+    <button id="copy" class="copy" type="button" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+      <span id="copy-label">Copy for your agent</span>
+    </button>
 
-      <div id="feedback" hidden>
-        <h2>Did your agent build it?</h2>
-        <div class="row">
-          <button data-worked="true" class="outline small" type="button">It worked</button>
-          <button data-worked="false" class="outline small" type="button">It didn't</button>
-          <a id="report-open" href="#" class="quiet">Report</a>
-        </div>
-        <p id="voted" class="meta" hidden></p>
-        <form id="report" hidden>
-          <select id="reason" aria-label="Reason">
-            <option value="wrong">Wrong or outdated</option>
-            <option value="malicious">Malicious instructions</option>
-            <option value="copyright">Copyright</option>
-            <option value="other">Other</option>
-          </select>
-          <button type="submit" class="outline small">Send</button>
-        </form>
-      </div>
-    </section>
-
-    <section id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden>
-      <h2 id="lib-site">This site</h2>
-      <ul class="items">
-        <li>
-          <span class="avatar" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"/></svg>
-          </span>
-          <div class="info">
-            <span id="lib-status">Checking the library…</span>
-            <span id="lib-meta" class="meta"></span>
-          </div>
-        </li>
+    <section class="agents" aria-label="Works with">
+      <p class="meta">Paste into</p>
+      <ul>
+        <li><span class="logo" style="--logo:url(agents/claude.svg)"></span>Claude Code</li>
+        <li><span class="logo" style="--logo:url(agents/openai.svg)"></span>Codex</li>
+        <li><span class="logo" style="--logo:url(agents/cursor.svg)"></span>Cursor</li>
+        <li><span class="logo" style="--logo:url(agents/githubcopilot.svg)"></span>Copilot</li>
+        <li><span class="logo" style="--logo:url(agents/windsurf.svg)"></span>Windsurf</li>
+        <li><span class="logo" style="--logo:url(agents/googlegemini.svg)"></span>Gemini CLI</li>
       </ul>
-      <div class="row">
-        <a id="lib-link" href="https://scoop.md/library" target="_blank" class="link">Open in the scoop.md library</a>
-      </div>
-      <div class="row">
-        <button id="rebuild" class="outline small" type="button" hidden>Rebuild from this page</button>
-      </div>
     </section>
+
+    <footer class="foot">
+      <p id="share" class="meta" hidden></p>
+      <div id="feedback" hidden>
+        <span class="meta">Did it work?</span>
+        <button data-worked="true" class="vote" type="button" title="It worked" aria-label="It worked"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></button>
+        <button data-worked="false" class="vote" type="button" title="It didn't work" aria-label="It didn't work"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg></button>
+        <a id="report-open" href="#" class="quiet">Report</a>
+      </div>
+      <p id="voted" class="meta" hidden></p>
+      <form id="report" hidden>
+        <select id="reason" aria-label="Reason">
+          <option value="wrong">Wrong or outdated</option>
+          <option value="malicious">Malicious instructions</option>
+          <option value="copyright">Copyright</option>
+          <option value="other">Other</option>
+        </select>
+        <button type="submit" class="small">Send</button>
+      </form>
+      <button id="rebuild" class="quiet link" type="button" hidden>Rebuild from this page</button>
+    </footer>
   </main>
 
   <script type="module" src="popup.js"></script>

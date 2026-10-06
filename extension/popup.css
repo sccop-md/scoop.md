@@ -1,4 +1,4 @@
-/* Layout: brand bar, tab row with the Copy action, then a list of sources as avatar rows. */
+/* Layout: brand bar, then the text to paste, one Copy button, and the agents it works with. */
 /* Colours: Cloudflare orange (#FF5E1F) with its lighter orange (#FF9911), as in the app icon. */
 :root {
   --bar: #ff5e1f; --bar-2: #ff9911; --bar-fg: #ffffff; --mark: #ffffff; --ext: #3d1300;
@@ -21,7 +21,7 @@
 
 [hidden] { display: none !important; }
 * { box-sizing: border-box; }
-body { width: 380px; margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+body { width: 360px; margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
 svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -41,46 +41,43 @@ svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
 .switch input:checked + .track .knob { transform: translateX(14px); background: var(--bar); }
 .switch input:focus-visible + .track { outline: 2px solid var(--mark); outline-offset: 2px; }
 
-/* Tabs */
-.tabs { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
-.tabs [role=tab] { padding: 12px 18px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: 600 12px/1 inherit; font-family: inherit; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
-.tabs [role=tab][aria-selected=true] { background: var(--tint); color: var(--link); border-bottom-color: var(--link); }
-#actions { margin-left: auto; display: flex; align-items: center; padding-right: 14px; }
-
-/* Buttons */
-button { font: inherit; color: inherit; }
-.outline { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1.5px solid var(--link); border-radius: 6px; color: var(--link); background: none; font-weight: 600; cursor: pointer; }
-.outline:hover { background: var(--tint); }
-.outline svg { width: 16px; height: 16px; }
-.small { padding: 4px 10px; font-size: 12px; }
-.text { padding: 0; border: 0; background: none; color: var(--link); font-weight: 600; cursor: pointer; }
-
 /* Content */
-main { padding: 16px 18px 18px; }
-h2 { margin: 16px 0 8px; font-size: 14px; font-weight: 700; }
+main { display: grid; gap: 12px; padding: 14px 16px 14px; }
 p { margin: 0; }
 .meta { color: var(--muted); font-size: 12px; }
-#status { font-size: 15px; font-weight: 700; }
+.head { display: grid; gap: 2px; min-width: 0; }
+#status { font-size: 14px; font-weight: 700; white-space: nowrap; }
 #status.busy { color: var(--muted); font-weight: 500; }
-#status.err { color: var(--err); }
+#status.err { color: var(--err); white-space: normal; }
 #status:not(.busy):not(.err)::before { content: "✓ "; color: var(--ok); }
-#summary { margin-top: 2px; }
-#share { margin-top: 12px; }
+#summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.intro { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; background: var(--tint); font-size: 12px; }
+.x { margin-left: auto; padding: 0 4px; border: 0; background: none; color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; }
+
+#preview { display: block; width: 100%; height: 150px; resize: none; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--avatar); color: var(--fg); font: 11px/1.5 ui-monospace, "SF Mono", Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; }
+#preview:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+button { font: inherit; color: inherit; }
+.copy { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 14px; border: 0; border-radius: 10px; background: linear-gradient(180deg, var(--bar-2), var(--bar) 70%); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+.copy:hover { filter: brightness(1.05); }
+.copy:disabled { opacity: .55; cursor: default; filter: none; }
+.copy svg { width: 18px; height: 18px; }
+
+.agents { display: grid; gap: 6px; }
+.agents ul { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.agents li { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.logo { width: 14px; height: 14px; flex: none; background: currentColor; -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat; }
+
+.foot { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.foot:not(:has(> :not([hidden]))) { display: none; }
 #share.warn { color: var(--warn); }
-.notice { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; padding: 10px 12px; border-radius: 8px; background: var(--tint); font-size: 12px; }
-.notice .text { align-self: flex-start; }
-
-.items { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.items li { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--avatar); color: var(--fg); font: 700 10px/1 ui-monospace, "SF Mono", Menlo, monospace; }
-.avatar svg { width: 16px; height: 16px; }
-.items .info { display: flex; flex-direction: column; min-width: 0; }
-.items a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
-.items .size { margin-left: 6px; color: var(--muted); font-size: 12px; }
-
-.row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+#feedback { display: flex; align-items: center; gap: 6px; }
+.vote { display: grid; place-items: center; width: 28px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: none; color: var(--muted); cursor: pointer; }
+.vote:hover { color: var(--link); border-color: var(--link); }
+.vote svg { width: 15px; height: 15px; }
 .quiet { margin-left: auto; color: var(--muted); font-size: 12px; }
-.link { color: var(--link); font-weight: 600; }
-#report { display: flex; gap: 6px; margin-top: 8px; }
+.link { justify-self: start; margin: 0; padding: 0; border: 0; background: none; text-decoration: underline; cursor: pointer; }
+.small { padding: 3px 10px; font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+#report { display: flex; gap: 6px; }
 select { font: inherit; font-size: 12px; padding: 3px 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
-#lib-status { font-size: 14px; font-weight: 600; }

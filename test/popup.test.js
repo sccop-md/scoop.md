@@ -71,7 +71,9 @@ test('first scoop copies, shares a verified page-html section, and takes a vote'
   assert.match(clipboard.text, /not as instructions to you/);
   assert.match(clipboard.text, /# Get started with Widgets/);
   assert.ok(!clipboard.text.includes('Showcase'));
-  assert.match($('summary').textContent, /from 1 source on localhost, built from this page/);
+  assert.match($('summary').textContent, /KB · 1 source on localhost$/);
+  assert.equal($('preview').value, clipboard.text, 'the box shows exactly what was copied');
+  assert.equal($('copy').disabled, false);
   assert.match($('share').textContent, /^Shared with the library/);
   assert.equal($('intro').hidden, false, 'first run explains what is shared');
   $('intro-ok').onclick();
@@ -85,13 +87,13 @@ test('first scoop copies, shares a verified page-html section, and takes a vote'
 
   assert.equal($('feedback').hidden, false);
   await document.querySelector('#feedback button[data-worked="true"]').onclick();
-  assert.match($('voted').textContent, /worked for 1 person and didn't for 0/);
+  assert.match($('voted').textContent, /It worked for 1 person and didn't for 0/);
   assert.equal(store.skills[0].worked, 1);
 });
 
 test('next scoop on the site uses the shared skill with the current page first', async () => {
   const { $, clipboard } = await openPopup(`${docsUrl}/docs/other`);
-  assert.match($('summary').textContent, /from the shared library\. Worked for 1 person\./);
+  assert.match($('summary').textContent, /KB · shared, worked for 1 person$/);
   assert.ok(clipboard.text.indexOf('Get started with Gadgets') < clipboard.text.indexOf('Get started with Widgets'));
   assert.equal($('rebuild').hidden, false);
   assert.equal($('intro').hidden, true, 'intro only shows until dismissed');
