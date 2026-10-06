@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import HeroAnimation from '../components/HeroAnimation.astro';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
 export const prerender = true;
@@ -24,7 +25,10 @@ const agents = [
         {CHROME_STORE_URL ? 'Add to Chrome' : 'Coming soon to Chrome'} <span aria-hidden="true">→</span>
       </a>
       <a class="quiet" href="/library">Browse the library</a>
+      <a class="quiet" href={GITHUB_URL}>Open source on GitHub</a>
     </div>
+
+    <HeroAnimation />
 
     <p class="paste muted">Paste into</p>
     <ul class="agents">
@@ -70,7 +74,7 @@ const agents = [
     justify-content: center;
     align-items: center;
     gap: 0.75rem 1.5rem;
-    margin: 2.25rem 0 3.5rem;
+    margin: 2.25rem 0 2.5rem;
   }
 
   .quiet {
@@ -82,7 +86,7 @@ const agents = [
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin: 0 0 0.75rem;
+    margin: 2.5rem 0 0.75rem;
   }
 
   .agents {

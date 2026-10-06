@@ -1,0 +1,50 @@
+---
+// The home page demo: a cursor opens the scoop.md popup and clicks Copy.
+// Built by scripts/make-hero-animation.py into public/hero.json (Lottie).
+---
+
+<div class="hero-anim" data-src="/hero.json" role="img" aria-label="A cursor clicks the scoop.md icon in the browser toolbar, the popup opens, and the cursor clicks Copy for your agent."></div>
+
+<script>
+  import lottie from 'lottie-web/build/player/lottie_light';
+
+  for (const el of document.querySelectorAll<HTMLElement>('.hero-anim')) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const anim = lottie.loadAnimation({
+      container: el,
+      renderer: 'svg',
+      loop: true,
+      autoplay: false,
+      path: el.dataset.src,
+      rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
+    });
+    anim.addEventListener('DOMLoaded', () => {
+      el.classList.add('ready');
+      if (still) anim.goToAndStop(120, true); // the "Copied" moment, without motion
+    });
+    if (!still) {
+      // Only animate while it's on screen.
+      new IntersectionObserver(([entry]) => (entry.isIntersecting ? anim.play() : anim.pause())).observe(el);
+    }
+  }
+</script>
+
+<style>
+  .hero-anim {
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 960 / 600;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .hero-anim.ready {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-anim {
+      transition: none;
+    }
+  }
+</style>
