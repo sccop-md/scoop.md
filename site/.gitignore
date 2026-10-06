@@ -4,3 +4,5 @@ dist/
 .vercel/
 .dev.vars
 .env
+.vercel
+.env*

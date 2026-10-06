@@ -101,6 +101,7 @@ async function writeClipboard(text) {
     let ok = false;
     try { ok = document.execCommand('copy'); } catch {}
     area.remove();
+    getSelection()?.removeAllRanges();
     return ok;
   }
 }
