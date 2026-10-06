@@ -57,3 +57,7 @@ The extension talks to the v1 API specified in [docs/BACKEND.md](docs/BACKEND.md
 - A site is identified by hostname. Different products on one host share a skill.
 - "Worked" is a single button press, one vote per install.
 - Extraction is heuristic: it takes the smallest element around the page's `<h1>` that holds most of the prose.
+
+## License
+
+MIT. See [LICENSE](LICENSE). Agent logos in `extension/agents/` and `site/public/agents/` come from [Simple Icons](https://simpleicons.org) (CC0); the brands belong to their owners.
