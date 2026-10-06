@@ -1,4 +1,4 @@
-"""Builds the home page animation (site/public/hero.json, a Lottie file).
+"""Builds the home page animation (site/public/hero-wide.json for desktop, hero.json for phones; Lottie).
 
 A cursor clicks the scoop.md icon in a browser toolbar, the popup opens, and
 the cursor clicks "Copy for your agent", which turns to "Copied". The popup is
@@ -16,21 +16,28 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 HERO = ROOT / "brand" / "hero"
-OUT = ROOT / "site" / "public" / "hero.json"
+PUBLIC = ROOT / "site" / "public"
+# (file, width, height): the wide one for desktop, the taller one for phones.
+SIZES = [("hero-wide.json", 1280, 560), ("hero.json", 960, 600)]
 
 FPS, END = 30, 180          # 6 second loop
-W, H = 960, 600
-
-# Scene geometry
-WIN = (30, 24, 900, 552)    # browser window x, y, w, h
 BAR_H = 54
-ICON = (WIN[0] + WIN[2] - 42, WIN[1] + BAR_H / 2)      # extension icon centre
 POP_W = 300                                             # popup width on screen
-POP_X, POP_Y = WIN[0] + WIN[2] - 18 - POP_W, WIN[1] + BAR_H + 8
 POP_SRC_W, POP_SRC_H = 600, 748                         # artwork pixels
 CSS = POP_W / 360                                       # popup CSS px -> scene px
-COPY_BTN = (POP_X + 180 * CSS, POP_Y + 307 * CSS)       # centre of the Copy button
-START = (300, 470)
+
+
+def configure(width, height):
+    """Scene geometry for a canvas size. The popup stays the same size; the browser window fills the canvas."""
+    global W, H, WIN, ICON, POP_X, POP_Y, COPY_BTN, START, F
+    W, H = width, height
+    WIN = (30, 24, W - 60, H - 48)                          # browser window x, y, w, h
+    ICON = (WIN[0] + WIN[2] - 42, WIN[1] + BAR_H / 2)       # extension icon centre
+    POP_X, POP_Y = WIN[0] + WIN[2] - 18 - POP_W, WIN[1] + BAR_H + 8
+    COPY_BTN = (POP_X + 180 * CSS, POP_Y + 307 * CSS)       # centre of the Copy button
+    F = W / 960                                             # stretch for the docs page text lines
+    START = (300 * F, H - 130)
+
 
 ORANGE = "#ff5e1f"
 
@@ -135,6 +142,7 @@ def png_asset(asset_id, path_, px):
 
 
 def build():
+    layers.clear()
     x, y, w, h = WIN
     assets = [
         jpeg_asset("ready", HERO / "popup-ready.png", (POP_SRC_W, POP_SRC_H)),
@@ -188,20 +196,20 @@ def build():
 
     # Browser window and a docs page.
     page = [
-        group([rect(x + 70, y + 110, 260, 22, 4), fill("#1d1712")], "title"),
-        group([rect(x + 70, y + 148, 470, 10, 5), fill("#e3dbd4")], "line1"),
-        group([rect(x + 70, y + 168, 430, 10, 5), fill("#e3dbd4")], "line2"),
-        group([rect(x + 70, y + 188, 380, 10, 5), fill("#e3dbd4")], "line3"),
-        group([rect(x + 70, y + 222, 180, 14, 4), fill("#45392f")], "h2"),
+        group([rect(x + 70 * F, y + 110, 260 * F, 22, 4), fill("#1d1712")], "title"),
+        group([rect(x + 70 * F, y + 148, 470 * F, 10, 5), fill("#e3dbd4")], "line1"),
+        group([rect(x + 70 * F, y + 168, 430 * F, 10, 5), fill("#e3dbd4")], "line2"),
+        group([rect(x + 70 * F, y + 188, 380 * F, 10, 5), fill("#e3dbd4")], "line3"),
+        group([rect(x + 70 * F, y + 222, 180 * F, 14, 4), fill("#45392f")], "h2"),
         # In a shape layer, earlier groups draw on top: text lines before the block behind them.
-        group([rect(x + 92, y + 272, 150, 8, 4), fill(ORANGE)], "code1"),
-        group([rect(x + 92, y + 292, 300, 8, 4), fill("#a8988b")], "code2"),
-        group([rect(x + 92, y + 312, 240, 8, 4), fill("#a8988b")], "code3"),
-        group([rect(x + 92, y + 332, 120, 8, 4), fill("#a8988b")], "code4"),
-        group([rect(x + 70, y + 250, 450, 110, 10), fill("#1b1410")], "code"),
-        group([rect(x + 70, y + 384, 460, 10, 5), fill("#e3dbd4")], "line4"),
-        group([rect(x + 70, y + 404, 410, 10, 5), fill("#e3dbd4")], "line5"),
-        group([rect(x + 70, y + 424, 300, 10, 5), fill("#e3dbd4")], "line6"),
+        group([rect(x + 92 * F, y + 272, 150 * F, 8, 4), fill(ORANGE)], "code1"),
+        group([rect(x + 92 * F, y + 292, 300 * F, 8, 4), fill("#a8988b")], "code2"),
+        group([rect(x + 92 * F, y + 312, 240 * F, 8, 4), fill("#a8988b")], "code3"),
+        group([rect(x + 92 * F, y + 332, 120 * F, 8, 4), fill("#a8988b")], "code4"),
+        group([rect(x + 70 * F, y + 250, 450 * F, 110, 10), fill("#1b1410")], "code"),
+        group([rect(x + 70 * F, y + 384, 460 * F, 10, 5), fill("#e3dbd4")], "line4"),
+        group([rect(x + 70 * F, y + 404, 410 * F, 10, 5), fill("#e3dbd4")], "line5"),
+        group([rect(x + 70 * F, y + 424, 300 * F, 10, 5), fill("#e3dbd4")], "line6"),
     ]
     chrome = [
         group([ellipse(x + 26, y + BAR_H / 2, 12), fill("#ff5f57")], "close"),
@@ -221,6 +229,8 @@ def build():
 
 
 if __name__ == "__main__":
-    data = build()
-    OUT.write_text(json.dumps(data, separators=(",", ":")))
-    print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} KB)")
+    for name, width, height in SIZES:
+        configure(width, height)
+        out = PUBLIC / name
+        out.write_text(json.dumps(build(), separators=(",", ":")))
+        print(f"wrote {out.relative_to(ROOT)} {width}x{height} ({out.stat().st_size // 1024} KB)")

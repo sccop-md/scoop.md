@@ -1,30 +1,51 @@
 ---
 // The home page demo: a cursor opens the scoop.md popup and clicks Copy.
-// Built by scripts/make-hero-animation.py into public/hero.json (Lottie).
+// Built by scripts/make-hero-animation.py: a wide cut for larger screens
+// (public/hero-wide.json) and a taller one for phones (public/hero.json).
 ---
 
-<div class="hero-anim" data-src="/hero.json" role="img" aria-label="A cursor clicks the scoop.md icon in the browser toolbar, the popup opens, and the cursor clicks Copy for your agent."></div>
+<div class="hero-anim" role="img" aria-label="A cursor clicks the scoop.md icon in the browser toolbar, the popup opens, and the cursor clicks Copy for your agent."></div>
 
 <script>
-  import lottie from 'lottie-web/build/player/lottie_light';
+  import lottie, { type AnimationItem } from 'lottie-web/build/player/lottie_light';
+
+  const WIDE = '(min-width: 768px)'; // keep in sync with the CSS below
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   for (const el of document.querySelectorAll<HTMLElement>('.hero-anim')) {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const anim = lottie.loadAnimation({
-      container: el,
-      renderer: 'svg',
-      loop: true,
-      autoplay: false,
-      path: el.dataset.src,
-      rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
-    });
-    anim.addEventListener('DOMLoaded', () => {
-      el.classList.add('ready');
-      if (still) anim.goToAndStop(120, true); // the "Copied" moment, without motion
-    });
+    let anim: AnimationItem | null = null;
+    let visible = false;
+
+    const load = (wide: boolean) => {
+      anim?.destroy();
+      el.classList.remove('ready');
+      anim = lottie.loadAnimation({
+        container: el,
+        renderer: 'svg',
+        loop: true,
+        autoplay: false,
+        path: wide ? '/hero-wide.json' : '/hero.json',
+        rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
+      });
+      const current = anim;
+      current.addEventListener('DOMLoaded', () => {
+        el.classList.add('ready');
+        if (still) current.goToAndStop(120, true); // the "Copied" moment, without motion
+        else if (visible) current.play();
+      });
+    };
+
+    const media = matchMedia(WIDE);
+    load(media.matches);
+    media.addEventListener('change', (e) => load(e.matches));
+
     if (!still) {
       // Only animate while it's on screen.
-      new IntersectionObserver(([entry]) => (entry.isIntersecting ? anim.play() : anim.pause())).observe(el);
+      new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) anim?.play();
+        else anim?.pause();
+      }).observe(el);
     }
   }
 </script>
@@ -36,6 +57,13 @@
     aspect-ratio: 960 / 600;
     opacity: 0;
     transition: opacity 0.4s ease;
+  }
+
+  @media (min-width: 768px) {
+    .hero-anim {
+      max-width: 1040px;
+      aspect-ratio: 1280 / 560;
+    }
   }
 
   .hero-anim.ready {
