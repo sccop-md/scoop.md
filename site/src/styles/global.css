@@ -1,60 +1,59 @@
-/* scoop.md: ink on paper, one Cloudflare-orange highlighter taken from the app icon. Tokens first, then base, then
-   the few shared patterns pages reuse. */
+/* scoop.md: charcoal on warm off-white, with the app icon’s orange kept for accents only.
+   Fill-only cards, pill buttons, soft corners. Tokens first, then base, then the few shared
+   patterns pages reuse. */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
-  --paper: #faf8f6;
-  --sheet: #ffffff;
-  --ink: #1d1712;
-  --ink-2: #45392f;
-  --muted: #6f6359;
-  --rule: #e9e1da;
-  --rule-strong: #1d1712;
-  --mark: #ff5e1f;        /* Cloudflare orange: backgrounds only, text on it is --on-mark */
+  --paper: #f6f4f0;       /* off-white page */
+  --sheet: #ffffff;       /* cards that sit on the page */
+  --tint: #eeebe6;        /* quiet fill for chips and inset areas */
+  --ink: #1d1c1a;
+  --ink-2: #5e5b57;
+  --muted: #8f8b85;
+  --rule: #e6e2dc;
+  --rule-strong: #1d1c1a;
+  --mark: #ff5e1f;        /* Cloudflare orange: accents only */
+  --mark-2: #ff8a3d;      /* lighter end of the orange gradient */
+  --mark-soft: #ffeadf;   /* orange wash behind accent chips */
   --on-mark: #ffffff;
-  --accent: #c2410c;      /* readable orange for text on paper */
+  --accent: #e2500f;      /* readable orange for text on paper */
+  --panel: #121211;       /* the dark inset panel */
+  --panel-2: #1b1b1a;
+  --panel-rule: #2a2a28;
   --code-bg: #ffffff;
-  --syn-h: #1d1712;
-  --syn-q: #6f6359;
-  --syn-li: #c2410c;
-  --syn-url: #2b4fd6;
+  --syn-h: #1d1c1a;
+  --syn-q: #8f8b85;
+  --syn-li: #e2500f;
+  --syn-url: #3b5bdb;
   --bad: #b3261e;
   --focus: #ff5e1f;
 
-  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --measure: 68ch;
-  --wrap: 1160px;
-  --gutter: clamp(16px, 4vw, 40px);
-  --radius: 3px;
+  --wrap: 1104px;         /* 1024px of content plus the gutters */
+  --gutter: 40px;
+  --radius: 12px;
+  --radius-card: 20px;
+  --radius-lg: 32px;
+  --section: clamp(5rem, 11vw, 8rem);
+  --shadow: 0 1px 2px rgba(30, 25, 20, 0.04), 0 12px 32px -12px rgba(30, 25, 20, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (max-width: 800px) {
   :root {
-    --paper: #120d0a;
-    --sheet: #1b1410;
-    --ink: #f7efe9;
-    --ink-2: #d9cbc0;
-    --muted: #a8988b;
-    --rule: #33271f;
-    --rule-strong: #f7efe9;
-    --mark: #ff5e1f;
-    --on-mark: #ffffff;
-    --accent: #ff9911;
-    --code-bg: #17110d;
-    --syn-h: #fff7f1;
-    --syn-q: #a8988b;
-    --syn-li: #ff9911;
-    --syn-url: #9db7ff;
-    --bad: #ff8a80;
-    --focus: #ff9911;
+    --gutter: 24px;
   }
 }
 
-
+@media (max-width: 360px) {
+  :root {
+    --gutter: 16px;
+  }
+}
 
 *,
 *::before,
@@ -72,6 +71,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font: 400 1.0625rem/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
@@ -94,16 +94,16 @@ a:hover {
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   margin: 0;
   text-wrap: balance;
 }
@@ -124,8 +124,8 @@ samp {
 kbd {
   border: 1px solid var(--rule);
   border-bottom-width: 2px;
-  border-radius: var(--radius);
-  padding: 0.05em 0.35em;
+  border-radius: 6px;
+  padding: 0.05em 0.4em;
   background: var(--sheet);
 }
 
@@ -138,10 +138,10 @@ kbd {
   position: absolute;
   left: -9999px;
   top: 0;
-  background: var(--mark);
-  color: var(--on-mark);
+  background: var(--ink);
+  color: var(--paper);
   padding: 0.5rem 0.75rem;
-  z-index: 10;
+  z-index: 30;
 }
 
 .skip:focus {
@@ -154,74 +154,107 @@ kbd {
   padding: 0 var(--gutter);
 }
 
-/* Section eyebrow, written like a Markdown heading marker: "## how it works" */
+/* Section label: a short line of orange text over the heading */
 .eyebrow {
-  font: 500 0.8125rem/1 var(--font-mono);
-  color: var(--muted);
-  margin: 0 0 1rem;
-  letter-spacing: 0;
-}
-
-.eyebrow::before {
-  content: '## ';
+  font: 500 0.9375rem/1.2 var(--font-body);
   color: var(--accent);
+  margin: 0 0 0.9rem;
+  letter-spacing: -0.01em;
 }
 
-/* The highlighter stroke */
+/* The accent words in a headline */
 .mark {
-  background: linear-gradient(transparent 12%, var(--mark) 12%, var(--mark) 88%, transparent 88%);
-  color: var(--on-mark);
-  padding: 0 0.12em;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+  background: linear-gradient(120deg, var(--mark-2), var(--mark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
-  font: 600 1rem/1 var(--font-body);
-  padding: 0.95em 1.25em;
-  border: 2px solid var(--rule-strong);
-  border-radius: var(--radius);
+  gap: 0.5em;
+  font: 500 1rem/1 var(--font-body);
+  padding: 0.9em 1.4em;
+  border: 0;
+  border-radius: 999px;
   text-decoration: none;
-  background: var(--mark);
-  color: var(--on-mark);
-  box-shadow: 4px 4px 0 var(--rule-strong);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  background: var(--ink);
+  color: var(--paper);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, background 0.2s ease;
+}
+
+/* Hover: the button lifts, and a light shine sweeps across it once */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
 }
 
 .btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--rule-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(30, 25, 20, 0.45);
+}
+
+.btn:hover::after {
+  animation: btn-shine 0.75s ease-out;
 }
 
 .btn:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 var(--rule-strong);
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+  transition-duration: 0.08s;
+}
+
+@keyframes btn-shine {
+  to { transform: translateX(120%); }
+}
+
+/* Orange is for accents, so the orange button is kept for rare use */
+.btn--accent {
+  background: linear-gradient(180deg, var(--mark-2), var(--mark));
+  color: var(--on-mark);
+}
+
+.btn--soft {
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.btn--soft:hover {
+  background: color-mix(in srgb, var(--ink) 8%, var(--tint));
+  box-shadow: 0 10px 20px -14px rgba(30, 25, 20, 0.35);
+}
+
+.btn--soft::after,
+.btn--quiet::after {
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%);
 }
 
 .btn--quiet {
   background: transparent;
   color: var(--ink);
-  box-shadow: none;
-  border-color: var(--rule);
+  box-shadow: inset 0 0 0 1px var(--rule);
 }
 
 .btn--quiet:hover {
-  border-color: var(--rule-strong);
-  box-shadow: none;
-  transform: none;
+  box-shadow: inset 0 0 0 1px var(--ink-2), 0 10px 20px -14px rgba(30, 25, 20, 0.35);
 }
 
 /* Source-kind tag, e.g. `llms.txt` */
 .kind {
   display: inline-block;
   font: 500 0.78rem/1.4 var(--font-mono);
-  padding: 0.1em 0.45em;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  background: var(--sheet);
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  background: var(--tint);
   color: var(--ink-2);
   white-space: nowrap;
 }
@@ -229,7 +262,8 @@ kbd {
 .kind--page-md,
 .kind--llms,
 .kind--llms-full {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--rule));
+  background: var(--mark-soft);
+  color: var(--accent);
 }
 
 .muted {
@@ -248,9 +282,8 @@ kbd {
 .prose h3 {
   font-size: 1.15rem;
   margin: 1.75rem 0 0.5rem;
-  font-family: var(--font-body);
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 
 .prose ul,

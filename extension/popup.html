@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body data-stage="loading">
+  <svg class="defs" aria-hidden="true"><defs><linearGradient id="io-ot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a52"/><stop offset="1" stop-color="#ff6a26"/></linearGradient><linearGradient id="io-ol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a33"/><stop offset="1" stop-color="#f45a17"/></linearGradient><linearGradient id="io-or" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9480c"/><stop offset="1" stop-color="#c2410c"/></linearGradient><radialGradient id="io-sh"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs></svg>
   <header class="bar">
     <div class="brand">
       <img src="icons/icon48.png" alt="" width="24" height="24">
-      <span>scoop.md</span>
+      <span>scoop<span class="ext">.md</span></span>
     </div>
     <div class="tools">
       <a id="settings" href="#" class="icon" title="Settings" aria-label="Settings">
@@ -38,22 +39,16 @@
     </div>
 
     <section id="loader" class="stage" aria-hidden="true">
-      <div class="mark"><img src="icons/icon48.png" alt="" width="44" height="44"></div>
-      <p class="stage-text">Finding this site's llms.txt<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+      <svg class="illo illo-loading" viewBox="0 0 160 124" width="160" height="124" aria-hidden="true"><ellipse cx="80" cy="118" rx="64" ry="14.08" fill="url(#io-sh)"/><polygon points="34,70 80,96 80,114 34,88" fill="url(#io-ol)" stroke="#ff7a33" stroke-width="4" stroke-linejoin="round"/><polygon points="126,70 80,96 80,114 126,88" fill="url(#io-or)" stroke="#d9480c" stroke-width="4" stroke-linejoin="round"/><polygon points="80,44 126,70 80,96 34,70" fill="url(#io-ot)" stroke="#ff9a52" stroke-width="4" stroke-linejoin="round"/><g transform="matrix(0.46 0.26 -0.46 0.26 80 44)"><rect x="24" y="24" width="52" height="52" rx="10" fill="#fff"/><path d="M58 37c-6-2-15-1-18 4-2 5 4 7 10 8 7 1 11 4 8 9-3 5-11 6-18 3" fill="none" stroke="#ff5e1f" stroke-width="7" stroke-linecap="round"/></g><g class="bob" transform="translate(80 30)"><polygon points="-26,0 0,15 0,18 -26,3" fill="#ebe4dc"/><polygon points="26,0 0,15 0,18 26,3" fill="#ddd3c8"/><polygon points="0,-15 26,0 0,15 -26,0" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/><line x1="-1.3" y1="-6.75" x2="7.8" y2="-1.5" stroke="#ff5e1f" stroke-width="2.4" stroke-linecap="round"/><line x1="-5.98" y1="-4.05" x2="7.02" y2="3.45" stroke="#e6ddd3" stroke-width="2.4" stroke-linecap="round"/><line x1="-10.66" y1="-1.35" x2="0.52" y2="5.1" stroke="#e6ddd3" stroke-width="2.4" stroke-linecap="round"/></g></svg>
       <p id="elapsed" class="elapsed">0.0s</p>
+      <p class="stage-text">Finding this site's llms.txt</p>
+      <div class="progress"><span></span></div>
     </section>
 
     <section id="copied-stage" class="stage" aria-hidden="true" hidden>
-      <svg class="clipboard" viewBox="0 0 64 64" aria-hidden="true">
-        <rect class="board" x="12" y="12" width="40" height="46" rx="6"/>
-        <rect class="clip" x="23" y="7" width="18" height="10" rx="3"/>
-        <g class="doc">
-          <rect x="20" y="20" width="24" height="28" rx="3"/>
-          <path d="M25 28h14M25 33h14M25 38h9"/>
-        </g>
-        <path class="check" d="M22 38l7 7 13-14"/>
-      </svg>
+      <svg class="tick" viewBox="0 0 48 48" aria-hidden="true"><path d="M11 25.5l8.5 8.5L37.5 15"/></svg>
       <p class="stage-text">Copied to your clipboard</p>
+      <p class="stage-sub">Paste it into your agent.</p>
     </section>
 
     <p id="announce" class="sr" aria-live="polite"></p>
@@ -61,27 +56,52 @@
     <!-- The main view: the site's llms.txt and its instructions for agents. -->
     <section id="main" class="card main" aria-label="This site's llms.txt" hidden>
       <p id="llms-checking" class="meta">Checking this site's llms.txt…</p>
-      <div id="llms-block" class="field-block" hidden>
-        <p class="field-label"><span class="label-chip">llms.txt</span><span id="llms-badge" class="badge" hidden>by scoop.md</span></p>
-        <div class="field">
-          <span id="llms-field-text" class="field-url"></span>
-          <a id="llms-field" class="field-icon" href="#" target="_blank" rel="noopener" aria-label="Open the llms.txt" title="Open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
-          <button id="copy-llms-url" class="field-icon" type="button" aria-label="Copy the llms.txt link" title="Copy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
-        </div>
-        <p id="llms-meta" class="meta"></p>
-      </div>
-      <div id="agent-block" class="field-block" hidden>
-        <p class="field-label"><span class="label-chip">Instructions for agents</span><button id="copy-agent" class="field-icon" type="button" aria-label="Copy the instructions for agents" title="Copy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></p>
-        <pre id="agent-text" class="agent-text" data-collapsed="true"></pre>
-        <button id="agent-more" class="more" type="button" hidden>Show all <span aria-hidden="true">⌄</span></button>
+      <div id="llms-found" class="found" hidden>
+        <span class="site-ic" aria-hidden="true"><img id="site-icon" src="icons/icon32.png" width="16" height="16" alt=""></span>
+        <span id="llms-found-text" class="site-name"></span>
+        <span id="llms-found-tag" class="tag"></span>
       </div>
       <button id="copy-llms" class="copy" type="button" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        <span class="copy-icons" aria-hidden="true">
+          <svg class="ic-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <svg class="ic-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </span>
         <span id="copy-llms-label">Copy llms.txt</span>
       </button>
-      <p id="not-dev" class="not-dev" hidden>scoop.md has nothing to copy for this site.</p>
-      <p id="llms-status" class="meta" role="status"></p>
-      <button id="llms-retry" class="small" type="button" hidden>Retry</button>
+      <!-- A peek at exactly what gets copied; everything else folds away until asked for. -->
+      <pre id="peek" class="peek" hidden></pre>
+      <details class="details">
+        <summary><span id="llms-meta" class="meta"></span><span class="toggle">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></summary>
+        <div class="details-body">
+          <div id="llms-block" class="field-block" hidden>
+            <p class="field-label"><span class="label-chip">llms.txt</span><span id="llms-badge" class="badge" hidden>by scoop.md</span></p>
+            <div class="field">
+              <span id="llms-field-text" class="field-url"></span>
+              <a id="llms-field" class="field-icon" href="#" target="_blank" rel="noopener" aria-label="Open the llms.txt" title="Open"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+              <button id="copy-llms-url" class="field-icon" type="button" aria-label="Copy the llms.txt link" title="Copy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
+            </div>
+          </div>
+          <div id="agent-block" class="field-block" hidden>
+            <p class="field-label"><span class="label-chip">Instructions for agents</span><button id="copy-agent" class="field-icon" type="button" aria-label="Copy the instructions for agents" title="Copy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></p>
+            <pre id="agent-text" class="agent-text" data-collapsed="true"></pre>
+            <button id="agent-more" class="more" type="button" hidden>Show all <span aria-hidden="true">⌄</span></button>
+          </div>
+        </div>
+      </details>
+      <!-- Not a docs site: a short empty state around the one sentence. -->
+      <div class="empty">
+        <svg class="illo illo-nodocs" viewBox="0 0 160 124" width="160" height="124" aria-hidden="true"><ellipse cx="80" cy="118" rx="64" ry="14.08" fill="url(#io-sh)"/><polygon points="34,70 80,96 80,114 34,88" fill="#e7dfd6" stroke="#e7dfd6" stroke-width="4" stroke-linejoin="round"/><polygon points="126,70 80,96 80,114 126,88" fill="#d6ccc1" stroke="#d6ccc1" stroke-width="4" stroke-linejoin="round"/><polygon points="80,44 126,70 80,96 34,70" fill="#f7f2ec" stroke="#f7f2ec" stroke-width="4" stroke-linejoin="round"/><g class="bob ghost" transform="translate(80 30)"><polygon points="0,-16 28,0 0,16 -28,0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3" stroke-linejoin="round" opacity=".6"/></g><g transform="translate(112 22)"><circle r="10" fill="currentColor" opacity=".12"/><text y="4" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" opacity=".7">?</text></g></svg>
+        <p class="empty-title">No llms.txt here</p>
+        <p id="not-dev" class="not-dev" hidden>scoop.md has nothing to copy for this site.</p>
+        <a class="empty-link" href="https://scoop.md/library" target="_blank" rel="noopener">Browse sites that have one</a>
+      </div>
+      <!-- Problems: one line, or (can't reach scoop.md) a small picture of the broken link and Retry. -->
+      <div class="status-row">
+        <svg class="illo illo-off" viewBox="0 0 220 112" width="220" height="112" aria-hidden="true"><ellipse cx="52" cy="104" rx="46" ry="10.12" fill="url(#io-sh)"/><ellipse cx="168" cy="104" rx="46" ry="10.12" fill="url(#io-sh)"/><polygon points="14,62 52,84 52,99 14,77" fill="url(#io-ol)" stroke="#ff7a33" stroke-width="4" stroke-linejoin="round"/><polygon points="90,62 52,84 52,99 90,77" fill="url(#io-or)" stroke="#d9480c" stroke-width="4" stroke-linejoin="round"/><polygon points="52,40 90,62 52,84 14,62" fill="url(#io-ot)" stroke="#ff9a52" stroke-width="4" stroke-linejoin="round"/><g transform="matrix(0.38 0.22 -0.38 0.22 52 40)"><rect x="24" y="24" width="52" height="52" rx="10" fill="#fff"/><path d="M58 37c-6-2-15-1-18 4-2 5 4 7 10 8 7 1 11 4 8 9-3 5-11 6-18 3" fill="none" stroke="#ff5e1f" stroke-width="7" stroke-linecap="round"/></g><polygon points="130,62 168,84 168,99 130,77" fill="#2a2825" stroke="#2a2825" stroke-width="4" stroke-linejoin="round"/><polygon points="206,62 168,84 168,99 206,77" fill="#1d1c1a" stroke="#1d1c1a" stroke-width="4" stroke-linejoin="round"/><polygon points="168,40 206,62 168,84 130,62" fill="#34312d" stroke="#3a3733" stroke-width="4" stroke-linejoin="round"/><g transform="matrix(.38 .22 -.38 .22 168 40)"><rect x="30" y="38" width="40" height="6" rx="3" fill="#6b6762"/><rect x="30" y="54" width="28" height="6" rx="3" fill="#6b6762"/></g><path class="link" d="M60 40 Q110 -4 160 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3 5" stroke-linecap="round" opacity=".55"/><rect x="98" y="8" width="24" height="24" rx="12" fill="var(--card)"/><g class="cut" transform="translate(110 20)"><circle r="10" fill="color-mix(in srgb, var(--err) 18%, var(--card))"/><path d="M-3.5-3.5l7 7M3.5-3.5l-7 7" stroke="var(--err)" stroke-width="2.2" stroke-linecap="round"/></g></svg>
+        <p id="llms-status" class="meta" role="status"></p>
+        <p class="offline-sub">Check your connection, then try again.</p>
+        <button id="llms-retry" class="small" type="button" hidden>Retry</button>
+      </div>
     </section>
   </main>
 

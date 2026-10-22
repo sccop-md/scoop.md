@@ -1,15 +1,10 @@
 ---
-import '@fontsource-variable/bricolage-grotesque/wght.css';
-import '@fontsource/ibm-plex-sans/400.css';
-import '@fontsource/ibm-plex-sans/500.css';
-import '@fontsource/ibm-plex-sans/600.css';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
-import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource-variable/geist/wght.css';
+import '@fontsource-variable/geist-mono/wght.css';
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
 import Beacon from '../components/Beacon.astro';
-import { GITHUB_URL } from '../lib/links';
+import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
 interface Props {
   title?: string;
@@ -44,8 +39,7 @@ const nav = [
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#faf8f6" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#120d0a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f4f0" />
     <meta property="og:image" content="https://scoop.md/icon-512.png" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -55,13 +49,15 @@ const nav = [
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
-      <div class="wrap bar">
+      <div class="wrap"><div class="bar">
         <a class="brand" href="/" aria-label="scoop.md home">
-          <Logo />
-          <span class="word">scoop<span class="ext">.md</span></span>
+          <span class="mark-wrap"><Logo /></span>
+          <span class="word" aria-hidden="true">
+            {[...'scoop'].map((c, i) => <span class="ch" style={`--i:${i}`}>{c}</span>)}<span class="ext"><span class="dot">.</span><span class="md">md</span></span>
+          </span>
         </a>
         <nav aria-label="Main">
-          <ul>
+          <ul id="nav-links">
             {
               nav.map((item) => (
                 <li>
@@ -72,8 +68,14 @@ const nav = [
               ))
             }
           </ul>
+          <a class="btn nav-cta" href={CHROME_STORE_URL ?? GITHUB_URL} data-cta="nav_chrome">
+            {CHROME_STORE_URL ? 'Add to Chrome' : 'Get it'}
+          </a>
+          <button class="menu" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu">
+            <span aria-hidden="true"></span>
+          </button>
         </nav>
-      </div>
+      </div></div>
     </header>
 
     <main id="main">
@@ -91,12 +93,38 @@ const nav = [
       </div>
     </footer>
     <Beacon />
+    <script>
+      // Mobile menu: the nav links drop down under the bar. Closes on a link tap,
+      // a tap outside, Escape, or widening past the breakpoint.
+      const header = document.querySelector<HTMLElement>('.site-header');
+      const btn = header?.querySelector<HTMLButtonElement>('.menu');
+      if (header && btn) {
+        const set = (open: boolean) => {
+          header.classList.toggle('open', open);
+          btn.setAttribute('aria-expanded', String(open));
+        };
+        btn.addEventListener('click', () => set(!header.classList.contains('open')));
+        header.querySelectorAll('#nav-links a').forEach((a) => a.addEventListener('click', () => set(false)));
+        document.addEventListener('click', (e) => {
+          if (!header.contains(e.target as Node)) set(false);
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && header.classList.contains('open')) {
+            set(false);
+            btn.focus();
+          }
+        });
+        matchMedia('(min-width: 641px)').addEventListener('change', (e) => e.matches && set(false));
+      }
+    </script>
   </body>
 </html>
 
 <style>
   .site-header {
-    border-bottom: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    z-index: 20;
   }
 
   .bar {
@@ -104,7 +132,14 @@ const nav = [
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    min-height: 64px;
+    min-height: 68px;
+    padding: 0 12px 0 22px;
+    border-radius: 0 0 var(--radius-card) var(--radius-card);
+    position: relative;
+    background: color-mix(in srgb, var(--sheet) 94%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    box-shadow: 0 1px 0 var(--rule);
   }
 
   .brand {
@@ -112,15 +147,77 @@ const nav = [
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
-    font: 700 1.25rem/1 var(--font-display);
-    letter-spacing: -0.02em;
+    font: 650 1.25rem/1 var(--font-display);
+    letter-spacing: -0.03em;
   }
 
   .ext {
-    font-family: var(--font-mono);
     font-weight: 500;
-    font-size: 0.85em;
     color: var(--muted);
+  }
+
+  /* Page-load intro, skate. style: the icon ollies, the letters drop in and land
+     with a squash, the dot flips like a board and "md" grinds in. */
+  .mark-wrap,
+  .ch,
+  .dot,
+  .md {
+    display: inline-block;
+  }
+
+  .mark-wrap {
+    animation: ollie 0.7s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+    transform-origin: 50% 100%;
+  }
+
+  .ch {
+    transform-origin: 50% 100%;
+    animation: drop 0.6s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+    animation-delay: calc(0.18s + var(--i) * 0.055s);
+  }
+
+  .dot {
+    transform-origin: 50% 70%;
+    animation: kickflip 0.75s cubic-bezier(0.3, 0.7, 0.3, 1) 0.5s both;
+  }
+
+  .md {
+    animation: grind 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) 0.68s both;
+  }
+
+  @keyframes ollie {
+    0% { opacity: 0; transform: translateY(6px) rotate(-18deg) scale(0.7); }
+    35% { opacity: 1; transform: translateY(-9px) rotate(10deg) scale(1.05); }
+    62% { transform: translateY(0) rotate(0) scale(1.08, 0.88); }
+    80% { transform: scale(0.97, 1.04); }
+    100% { transform: none; }
+  }
+
+  @keyframes drop {
+    0% { opacity: 0; transform: translateY(-0.9em) rotate(-10deg); }
+    45% { opacity: 1; transform: translateY(0.06em) rotate(2deg) scale(1.12, 0.82); }
+    68% { transform: translateY(-0.08em) scale(0.95, 1.06); }
+    100% { transform: none; }
+  }
+
+  @keyframes kickflip {
+    0% { opacity: 0; transform: translateY(0) rotate(0); }
+    20% { opacity: 1; }
+    50% { transform: translateY(-0.75em) rotate(360deg) scale(1.3); }
+    78% { transform: translateY(0.03em) rotate(360deg) scale(1.25, 0.8); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes grind {
+    0% { opacity: 0; transform: translateX(0.7em) skewX(-18deg); }
+    60% { opacity: 1; transform: translateX(-0.05em) skewX(6deg); }
+    100% { transform: none; }
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
   }
 
   nav ul,
@@ -130,25 +227,191 @@ const nav = [
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem 1.25rem;
+    gap: 0.25rem 1.75rem;
   }
 
-  nav a {
-    font: 500 0.95rem/1 var(--font-mono);
+  nav ul a,
+  .foot ul a {
+    position: relative;
+  }
+
+  nav ul a {
+    font: 450 0.95rem/1 var(--font-body);
+    color: var(--ink-2);
     text-decoration: none;
     padding: 0.5rem 0;
     display: inline-block;
+    transition: color 0.2s ease;
   }
 
-  nav a:hover,
-  nav a[aria-current='page'] {
-    text-decoration: underline;
-    text-decoration-color: var(--accent);
-    text-decoration-thickness: 2px;
+  /* Hover: an underline draws in from the left (the current page keeps it) */
+  nav ul a::after,
+  .foot ul a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.2rem;
+    height: 1.5px;
+    border-radius: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .foot ul a::after {
+    bottom: -0.15rem;
+    height: 1px;
+  }
+
+  nav ul a:hover,
+  nav ul a[aria-current='page'] {
+    color: var(--ink);
+  }
+
+  nav ul a:hover::after,
+  nav ul a[aria-current='page']::after,
+  .foot ul a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .nav-cta {
+    font-size: 0.9rem;
+    padding: 0.65em 1.1em;
+    white-space: nowrap;
+  }
+
+  .menu {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    .bar {
+      min-height: 60px;
+      padding: 0 8px 0 16px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .open .bar {
+      border-radius: 0;
+    }
+
+    .brand {
+      font-size: 1.125rem;
+    }
+
+    nav {
+      gap: 0.5rem;
+    }
+
+    .nav-cta {
+      font-size: 0.875rem;
+      padding: 0.7em 1em;
+    }
+
+    .menu {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: var(--tint);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    /* Two lines that turn into an × */
+    .menu span,
+    .menu span::before {
+      display: block;
+      width: 16px;
+      height: 1.5px;
+      border-radius: 1px;
+      background: currentColor;
+      transition: transform 0.2s ease;
+    }
+
+    .menu span {
+      position: relative;
+      transform: translateY(-3px);
+    }
+
+    .menu span::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+    }
+
+    .open .menu span {
+      transform: translateY(0) rotate(45deg);
+    }
+
+    .open .menu span::before {
+      transform: translateY(-6px) rotate(-90deg);
+    }
+
+    nav ul {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      display: grid;
+      gap: 0;
+      padding: 0.25rem 8px 10px;
+      border-radius: 0 0 16px 16px;
+      background: var(--sheet);
+      box-shadow: 0 1px 0 var(--rule), 0 16px 32px -16px rgba(30, 25, 20, 0.25);
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s 0.2s;
+    }
+
+    .open nav ul {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    nav ul a {
+      display: block;
+      padding: 0.9rem 8px;
+      font-size: 1.0625rem;
+      color: var(--ink);
+      border-top: 1px solid var(--rule);
+    }
+
+    nav ul li:first-child a {
+      border-top: 0;
+    }
+
+    nav ul a::after {
+      display: none;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .ext {
+      display: none;
+    }
+
+    .bar {
+      padding-left: 12px;
+    }
+
+    .nav-cta {
+      font-size: 0.8125rem;
+      padding: 0.75em 0.9em;
+    }
   }
 
   .site-footer {
-    padding: 2rem 0 2.5rem;
+    padding: 2.5rem 0 3rem;
   }
 
   .foot ul {

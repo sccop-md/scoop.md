@@ -114,6 +114,22 @@ let timerTick = null;
 let foundMs = null;
 let preparedMs = null;
 const seconds = (ms) => `${(ms / 1000).toFixed(1)}s`;
+// The loader's timer, one span per character, so each digit that changes rolls in (popup.css)
+function setDigits(el, text) {
+  const old = [...el.children];
+  if (old.length !== text.length) {
+    el.textContent = '';
+    old.length = 0;
+  }
+  [...text].forEach((ch, i) => {
+    if (old[i]?.textContent === ch) return;
+    const d = document.createElement('span');
+    d.className = 'digit';
+    d.textContent = ch;
+    if (old[i]) old[i].replaceWith(d);
+    else el.append(d);
+  });
+}
 function startTimer() {
   stopTimer();
   timerStart = Date.now();
@@ -121,7 +137,7 @@ function startTimer() {
   preparedMs = null;
   const tick = () => {
     const text = seconds(Date.now() - timerStart);
-    $('elapsed').textContent = text;
+    setDigits($('elapsed'), text);
     if (llmsData?.llms?.status === 'preparing' && !$('llms-block').hidden) $('llms-meta').textContent = `Preparing… ${text}`;
   };
   tick();
@@ -169,7 +185,7 @@ async function showLlms(data, { fallback, privateHost }) {
   setLlms({ state: 'yes', data });
   const ok = await writeClipboard(llmsPrompt);
   if (ok && !privateHost) track('llms_copy', { site: siteKey(tab.url), source: llmsSource, trigger: 'auto' });
-  // Success shows on the button ("Copied ✓") and is announced; the line is for problems.
+  // Success shows on the button ("Copied", with a drawn check) and is announced; the line is for problems.
   $('llms-status').textContent = ok ? '' : 'Press Copy to put it on your clipboard.';
   llmsCopiedNow = ok;
   await revealAfterCopy(ok);
@@ -253,6 +269,8 @@ function setLlms({ state, data = null }) {
   $('llms-checking').hidden = state !== 'checking';
   $('llms-block').hidden = state !== 'yes';
   $('copy-llms').hidden = state !== 'yes';
+  $('peek').hidden = true;
+  $('llms-found').hidden = state !== 'yes';
   $('not-dev').hidden = state !== 'no';
   $('agent-block').hidden = true;
   $('llms-retry').hidden = state !== 'unreachable';
@@ -266,6 +284,17 @@ function setLlms({ state, data = null }) {
   if (state !== 'yes') return;
   const llms = data.llms;
   $('llms-badge').hidden = llms.source !== 'scoop';
+  // The site, with a tag for what was found: its own llms.txt, one scoop.md made, or one still being made
+  const found = llms.status === 'preparing' ? 'preparing' : llms.source;
+  $('llms-found').dataset.state = found;
+  $('llms-found').setAttribute('aria-label', {
+    preparing: `Preparing an llms.txt for ${site}`,
+    scoop: `llms.txt prepared by scoop.md for ${site}`,
+    site: `llms.txt detected on ${site}`,
+  }[found]);
+  if (tab.favIconUrl?.startsWith('http')) $('site-icon').src = tab.favIconUrl;
+  $('llms-found-text').textContent = site;
+  $('llms-found-tag').textContent = { preparing: 'Preparing', scoop: 'Made by scoop.md', site: 'llms.txt detected' }[found];
   const took = preparedMs != null ? `prepared in ${seconds(preparedMs)}` : foundMs != null ? `found in ${seconds(foundMs)}` : '';
   $('llms-meta').textContent = llms.status === 'preparing'
     ? `Preparing… ${seconds(Date.now() - timerStart)}`
@@ -275,6 +304,10 @@ function setLlms({ state, data = null }) {
   $('llms-field-text').setAttribute('aria-label', `llms.txt: ${llms.url}`);
   $('llms-field').href = llms.url;
   $('llms-field').setAttribute('aria-label', `Open ${llms.url}${llms.source === 'scoop' ? ', prepared by scoop.md' : ''}`);
+  // The start of the prompt the big button copies, so it's clear what goes to the agent
+  const prompt = data.prompt || llmsPrompt || '';
+  $('peek').textContent = prompt;
+  $('peek').hidden = !prompt;
   const text = agentInstructions(data);
   $('agent-block').hidden = !text;
   $('agent-text').textContent = text;
@@ -287,7 +320,7 @@ function setLlms({ state, data = null }) {
   };
   $('main').setAttribute('aria-label', `${site}: llms.txt${text ? ' and instructions for agents' : ''}`);
   llmsLabel = text ? 'Copy llms.txt + instructions' : 'Copy llms.txt';
-  if ($('copy-llms-label').textContent !== 'Copied ✓') $('copy-llms-label').textContent = llmsLabel;
+  if ($('copy-llms-label').textContent !== 'Copied') $('copy-llms-label').textContent = llmsLabel;
 }
 let llmsLabel = 'Copy llms.txt';
 
@@ -301,9 +334,16 @@ function middle(text, max) {
 
 let llmsCopiedTimer = null;
 function flashLlmsCopied() {
-  $('copy-llms-label').textContent = 'Copied ✓';
+  $('copy-llms-label').textContent = 'Copied';
+  // data-copied drives the button's copied animation (popup.css); off and on again restarts it
+  delete $('copy-llms').dataset.copied;
+  void $('copy-llms').offsetWidth;
+  $('copy-llms').dataset.copied = 'true';
   clearTimeout(llmsCopiedTimer);
-  llmsCopiedTimer = setTimeout(() => { $('copy-llms-label').textContent = llmsLabel; }, timing.copiedLabelMs);
+  llmsCopiedTimer = setTimeout(() => {
+    $('copy-llms-label').textContent = llmsLabel;
+    delete $('copy-llms').dataset.copied;
+  }, timing.copiedLabelMs);
 }
 $('copy-llms').onclick = async () => {
   if (!llmsPrompt) return;

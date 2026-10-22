@@ -1,0 +1,320 @@
+---
+// The hero picture, in the icon's isometric style: a docs site, scoop.md and your agent as three
+// blocks. A doc sheet lifts off the docs stack into scoop.md, which glows, and an orange prompt
+// sheet flies on to the agent, whose screen works through the llms.txt. One CSS loop, so every
+// part stays in step; prefers-reduced-motion leaves the agent screen showing its result.
+// Two layouts from one drawing: a row for wide screens, a zigzag down the page for phones.
+
+type Pt = [number, number];
+const poly = (pts: Pt[]) => pts.map((p) => p.join(',')).join(' ');
+
+// An isometric slab whose top face has its upper corner at (cx, y)
+function slab(cx: number, y: number, w: number, h: number, t: number) {
+  const top: Pt = [cx, y], r: Pt = [cx + w, y + h], b: Pt = [cx, y + 2 * h], l: Pt = [cx - w, y + h];
+  const d = (p: Pt): Pt => [p[0], p[1] + t];
+  return { top: poly([top, r, b, l]), left: poly([l, b, d(b), d(l)]), right: poly([r, b, d(b), d(r)]) };
+}
+
+// Maps a flat 100×100 square onto a top face, for drawing on it
+const onTop = (cx: number, y: number, w: number, h: number) => `matrix(${w / 100} ${h / 100} ${-w / 100} ${h / 100} ${cx} ${y})`;
+
+// The travelling sheet, drawn around (0, 0)
+const sheet = slab(0, -24, 42, 24, 4);
+const sheetLines = [
+  [0.3, 0.25, 0.6],
+  [0.48, 0.25, 0.75],
+  [0.66, 0.25, 0.68],
+].map(([v, u0, u1]) => {
+  const P = (u: number): Pt => [u * 42 - v * 42, -24 + u * 24 + v * 24];
+  return { a: P(u0), b: P(u1) };
+});
+
+const captions = ['docs.stripe.com', 'scoop.md', 'your agent'];
+
+// Each layout: block size, where the three blocks sit (cx, top of the top face), the trails'
+// control points, the agent screen's place and size, and the caption offset below a block.
+const layouts = [
+  { key: 'wide', view: [1000, 440], w: 112, h: 64, t: 44, at: [[170, 236], [500, 236], [830, 236]] as Pt[], ctrl: [[335, 86], [665, 86]] as Pt[], screen: { x: 702, y: 26, w: 256, below: false }, cap: 58, capSize: 17, textSize: 13.5 },
+  { key: 'tall', view: [400, 870], w: 92, h: 52, t: 36, at: [[112, 70], [288, 290], [200, 510]] as Pt[], ctrl: [[330, 90], [60, 380]] as Pt[], screen: { x: 40, y: 704, w: 320, below: true }, cap: 30, capSize: 18, textSize: 15 },
+].map((L) => {
+  const k = L.w / 112;
+  const id = (n: string) => `hf-${L.key}-${n}`;
+  const blocks = L.at.map(([cx, y]) => slab(cx, y, L.w, L.h, L.t));
+  const [d0] = L.at;
+  const pages = [0, 1, 2].map((i) => ({ ...slab(d0[0], d0[1] - 10 * k - i * 9 * k, 84 * k, 48 * k, 6 * k), y: d0[1] - 10 * k - i * 9 * k }));
+  const hand = (p: Pt): Pt => [p[0], p[1] + 30 * k];
+  const trails = [0, 1].map((i) => `M${hand(L.at[i]).join(' ')} Q ${L.ctrl[i].join(' ')} ${hand(L.at[i + 1]).join(' ')}`);
+  // Where the sheets fly: rest, lift, top of the arc, land, sink into the next block
+  const mid = (i: number): Pt => {
+    const a = L.at[i], b = L.at[i + 1], c = L.ctrl[i];
+    return [0.25 * a[0] + 0.5 * c[0] + 0.25 * b[0], 0.25 * (a[1] - 40 * k) + 0.5 * c[1] + 0.25 * (b[1] - 40 * k)];
+  };
+  const px = (n: number) => `${Math.round(n)}px`;
+  const [a, b, c] = L.at;
+  const vars = {
+    '--a0': `${px(a[0])}, ${px(a[1] + 14 * k)}`, '--a1': `${px(a[0])}, ${px(a[1] - 22 * k)}`, '--a2': `${px(a[0])}, ${px(a[1] - 40 * k)}`,
+    '--am': `${px(mid(0)[0])}, ${px(mid(0)[1])}`, '--a3': `${px(b[0])}, ${px(b[1] - 40 * k)}`, '--a4': `${px(b[0])}, ${px(b[1] + 26 * k)}`,
+    '--b1': `${px(b[0])}, ${px(b[1] - 40 * k)}`, '--bm': `${px(mid(1)[0])}, ${px(mid(1)[1])}`,
+    '--b3': `${px(c[0])}, ${px(c[1] - 40 * k)}`, '--b4': `${px(c[0])}, ${px(c[1] + 26 * k)}`,
+    '--gulp': `${px(b[0])} ${px(b[1] + 94 * k)}`,
+  };
+  const style = Object.entries(vars).map(([n, v]) => `${n}: ${v}`).join('; ');
+  return { ...L, k, id, blocks, pages, trails, style };
+});
+---
+
+{layouts.map((L) => (
+  <svg class:list={['flow', `flow--${L.key}`]} viewBox={`0 0 ${L.view[0]} ${L.view[1]}`} style={L.style} role="img" aria-label="A docs site, scoop.md and your agent as three blocks. A sheet from the docs site moves into scoop.md, which sends a prompt on to the agent. The agent reads the llms.txt, fetches two pages and writes code.">
+    <defs>
+      <linearGradient id={L.id('paper')} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" /><stop offset="1" stop-color="#faf5ef" /></linearGradient>
+      <linearGradient id={L.id('stone-l')} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ece5dd" /><stop offset="1" stop-color="#e0d7cd" /></linearGradient>
+      <linearGradient id={L.id('stone-r')} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d4c9bd" /><stop offset="1" stop-color="#e2d9cf" /></linearGradient>
+      <linearGradient id={L.id('orange-top')} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a52" /><stop offset="1" stop-color="#ff6a26" /></linearGradient>
+      <linearGradient id={L.id('orange-l')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a33" /><stop offset="1" stop-color="#f45a17" /></linearGradient>
+      <linearGradient id={L.id('orange-r')} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9480c" /><stop offset="1" stop-color="#c2410c" /></linearGradient>
+      <linearGradient id={L.id('ink-top')} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3733" /><stop offset="1" stop-color="#2a2825" /></linearGradient>
+      <radialGradient id={L.id('shadow')}><stop offset="0" stop-color="#5a3a20" stop-opacity="0.2" /><stop offset="1" stop-color="#5a3a20" stop-opacity="0" /></radialGradient>
+      <radialGradient id={L.id('glow')}><stop offset="0" stop-color="#ff7a33" stop-opacity="0.55" /><stop offset="1" stop-color="#ff7a33" stop-opacity="0" /></radialGradient>
+    </defs>
+
+    <!-- Paths the sheets travel -->
+    {L.trails.map((d) => <path class="trail" d={d} />)}
+
+    {L.at.map(([cx, y]) => <ellipse cx={cx} cy={y + 2 * L.h + L.t + 8 * L.k} rx={150 * L.k} ry={30 * L.k} fill={`url(#${L.id('shadow')})`} />)}
+
+    <!-- Docs site -->
+    <g>
+      <polygon points={L.blocks[0].left} fill={`url(#${L.id('stone-l')})`} stroke="#e7dfd6" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[0].right} fill={`url(#${L.id('stone-r')})`} stroke="#dbd1c6" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[0].top} fill="#f7f2ec" stroke="#f7f2ec" stroke-width="8" stroke-linejoin="round" />
+      {L.pages.map((p, i) => (
+        <g>
+          <polygon points={p.left} fill="#ebe4dc" />
+          <polygon points={p.right} fill="#ddd3c8" />
+          <polygon points={p.top} fill={`url(#${L.id('paper')})`} stroke="#ffffff" stroke-width="4" stroke-linejoin="round" />
+          {i === 2 && (
+            <g transform={onTop(L.at[0][0], p.y, 84 * L.k, 48 * L.k)} stroke-linecap="round">
+              <line x1="22" y1="28" x2="58" y2="28" stroke="#ff5e1f" stroke-width="7" />
+              <line x1="22" y1="44" x2="76" y2="44" stroke="#ebe3da" stroke-width="6" />
+              <line x1="22" y1="58" x2="70" y2="58" stroke="#ebe3da" stroke-width="6" />
+              <line x1="22" y1="72" x2="52" y2="72" stroke="#ebe3da" stroke-width="6" />
+            </g>
+          )}
+        </g>
+      ))}
+    </g>
+
+    <!-- scoop.md -->
+    <g class="scoop">
+      <polygon points={L.blocks[1].left} fill={`url(#${L.id('orange-l')})`} stroke="#ff7a33" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[1].right} fill={`url(#${L.id('orange-r')})`} stroke="#d9480c" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[1].top} fill={`url(#${L.id('orange-top')})`} stroke="#ff9a52" stroke-width="8" stroke-linejoin="round" />
+      <g transform={onTop(L.at[1][0], L.at[1][1], L.w, L.h)}>
+        <rect x="22" y="22" width="56" height="56" rx="10" fill="#ffffff" />
+        <path d="M58 36c-6-2-16-1-19 5-2 5 4 7 10 8 7 1 12 4 9 10-3 5-12 6-19 3" fill="none" stroke="#ff5e1f" stroke-width="7" stroke-linecap="round" />
+      </g>
+      <ellipse class="glow" cx={L.at[1][0]} cy={L.at[1][1] + L.h} rx={170 * L.k} ry={100 * L.k} fill={`url(#${L.id('glow')})`} />
+    </g>
+
+    <!-- Agent -->
+    <g>
+      <polygon points={L.blocks[2].left} fill="#2c2a27" stroke="#2c2a27" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[2].right} fill="#1d1c1a" stroke="#1d1c1a" stroke-width="8" stroke-linejoin="round" />
+      <polygon points={L.blocks[2].top} fill={`url(#${L.id('ink-top')})`} stroke="#3a3733" stroke-width="8" stroke-linejoin="round" />
+      <g transform={onTop(L.at[2][0], L.at[2][1], L.w, L.h)}>
+        <text x="26" y="64" class="prompt">&gt;_</text>
+      </g>
+    </g>
+
+    <!-- Agent screen: above the agent on wide screens, below it on phones -->
+    <g class="screen" transform={`translate(${L.screen.x} ${L.screen.y})`} style={`font-size: ${L.textSize}px`}>
+      <rect width={L.screen.w} height="150" rx="14" fill="#121211" />
+      <circle cx="18" cy="17" r="4" fill="#3a3936" />
+      <circle cx="31" cy="17" r="4" fill="#3a3936" />
+      <circle cx="44" cy="17" r="4" fill="#3a3936" />
+      <line x1="0" y1="34" x2={L.screen.w} y2="34" stroke="#232220" />
+      <text class="idle" x="16" y="60"><tspan class="or">›</tspan> <tspan class="dim">Waiting for a prompt</tspan><tspan class="cur">▍</tspan></text>
+      <g class="out">
+        <text class="l l1" x="16" y="60"><tspan class="ok">✓</tspan> Read llms.txt <tspan class="dim">527 pages</tspan></text>
+        <text class="l l2" x="16" y="84"><tspan class="ok">✓</tspan> Fetch webhooks.md</text>
+        <text class="l l3" x="16" y="108"><tspan class="ok">✓</tspan> Fetch quickstart.md</text>
+        <text class="l l4" x="16" y="132"><tspan class="or">✻</tspan> Writing code…</text>
+      </g>
+      {L.screen.below
+        ? <path d={`M${L.screen.w / 2} 0 l-9 0 l9 -12 l9 12 z`} fill="#121211" />
+        : <path d={`M${L.screen.w / 2} 150 l-9 0 l9 12 l9 -12 z`} fill="#121211" />}
+    </g>
+
+    <!-- The sheets in flight -->
+    <g class="fly fly-a">
+      <polygon points={sheet.left} fill="#ebe4dc" />
+      <polygon points={sheet.right} fill="#ddd3c8" />
+      <polygon points={sheet.top} fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" />
+      {sheetLines.map(({ a, b }, i) => (
+        <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={i === 0 ? '#ff5e1f' : '#e6ddd3'} stroke-width="3.5" stroke-linecap="round" />
+      ))}
+    </g>
+    <g class="fly fly-b">
+      <polygon points={sheet.left} fill="#ff8a3d" />
+      <polygon points={sheet.right} fill="#e2500f" />
+      <polygon points={sheet.top} fill="#fff1e8" stroke="#fff1e8" stroke-width="3" stroke-linejoin="round" />
+      {sheetLines.map(({ a, b }, i) => (
+        <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={i === 0 ? '#ff5e1f' : '#ffc9a6'} stroke-width="3.5" stroke-linecap="round" />
+      ))}
+    </g>
+
+    {L.at.map(([cx, y], i) => (
+      <text class:list={['cap', { 'cap-on': i === 1 }]} x={cx} y={y + 2 * L.h + L.t + L.cap} text-anchor="middle" style={`font-size: ${L.capSize}px`}>{captions[i]}</text>
+    ))}
+  </svg>
+))}
+
+<style>
+  .flow {
+    --loop: 11s;
+    width: min(100%, 940px);
+    height: auto;
+    overflow: visible;
+    font-family: var(--font-body);
+  }
+
+  .flow--tall {
+    display: none;
+    width: min(100%, 420px);
+  }
+
+  @media (max-width: 640px) {
+    .flow--wide {
+      display: none;
+    }
+
+    .flow--tall {
+      display: block;
+    }
+  }
+
+  .trail {
+    fill: none;
+    stroke: #d9cfc4;
+    stroke-width: 2;
+    stroke-dasharray: 2 8;
+    stroke-linecap: round;
+  }
+
+  .cap {
+    font-weight: 500;
+    fill: var(--muted);
+  }
+
+  .cap-on {
+    fill: var(--accent);
+  }
+
+  .prompt {
+    font: 700 38px/1 var(--font-mono);
+    fill: #ff8a3d;
+  }
+
+  .screen text {
+    font-family: var(--font-mono);
+    fill: #e6e3de;
+  }
+
+  .screen .ok { fill: #4fc27a; }
+  .screen .or { fill: #ff8a3d; }
+  .screen .dim { fill: #7d7973; }
+
+  .screen {
+    filter: drop-shadow(0 18px 24px rgba(30, 20, 10, 0.28));
+  }
+
+  /* ── The loop ── */
+  .fly {
+    opacity: 0;
+    animation: var(--loop) cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+
+  .fly-a { animation-name: fly-a; }
+  .fly-b { animation-name: fly-b; }
+
+  /* Docs → scoop.md, arcing over; each layout sets the points (--a0 … --b4) on its svg */
+  @keyframes fly-a {
+    0% { opacity: 0; transform: translate(var(--a0)) scale(0.8); }
+    6% { opacity: 1; transform: translate(var(--a1)) scale(1); }
+    12% { transform: translate(var(--a2)); }
+    22% { transform: translate(var(--am)); }
+    32% { transform: translate(var(--a3)); opacity: 1; }
+    38%, 100% { opacity: 0; transform: translate(var(--a4)) scale(0.6); }
+  }
+
+  /* scoop.md → agent */
+  @keyframes fly-b {
+    0%, 40% { opacity: 0; transform: translate(var(--a4)) scale(0.6); }
+    46% { opacity: 1; transform: translate(var(--b1)) scale(1); }
+    56% { transform: translate(var(--bm)); }
+    66% { transform: translate(var(--b3)); opacity: 1; }
+    72%, 100% { opacity: 0; transform: translate(var(--b4)) scale(0.6); }
+  }
+
+  .glow {
+    opacity: 0;
+    animation: glow var(--loop) ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0%, 32% { opacity: 0; }
+    40% { opacity: 1; }
+    52%, 100% { opacity: 0; }
+  }
+
+  .scoop {
+    transform-origin: var(--gulp);
+    animation: gulp var(--loop) ease-in-out infinite;
+  }
+
+  @keyframes gulp {
+    0%, 34% { transform: none; }
+    38% { transform: translateY(5px) scale(1.02, 0.97); }
+    44% { transform: translateY(-4px); }
+    50%, 100% { transform: none; }
+  }
+
+  /* Agent screen works through the llms.txt */
+  /* The screen: the waiting line clears as the prompt lands, then each result line types itself
+     out (a stepped wipe, one step per character), they hold, and everything clears for the loop. */
+  .l {
+    clip-path: inset(0 100% 0 0);
+    animation: var(--loop) linear infinite;
+  }
+
+  .l1 { animation-name: l1; }
+  .l2 { animation-name: l2; }
+  .l3 { animation-name: l3; }
+  .l4 { animation-name: l4; }
+
+  .idle {
+    animation: idle var(--loop) ease infinite;
+  }
+
+  .cur {
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes idle { 0%, 64% { opacity: 1; } 67%, 99% { opacity: 0; } 100% { opacity: 1; } }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  @keyframes l1 { 0%, 70% { clip-path: inset(0 100% 0 0); opacity: 1; animation-timing-function: steps(25, end); } 75%, 96% { clip-path: inset(0 0 0 0); opacity: 1; } 99%, 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+  @keyframes l2 { 0%, 76% { clip-path: inset(0 100% 0 0); opacity: 1; animation-timing-function: steps(18, end); } 80%, 96% { clip-path: inset(0 0 0 0); opacity: 1; } 99%, 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+  @keyframes l3 { 0%, 81% { clip-path: inset(0 100% 0 0); opacity: 1; animation-timing-function: steps(21, end); } 85%, 96% { clip-path: inset(0 0 0 0); opacity: 1; } 99%, 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+  @keyframes l4 { 0%, 86% { clip-path: inset(0 100% 0 0); opacity: 1; animation-timing-function: steps(15, end); } 89%, 96% { clip-path: inset(0 0 0 0); opacity: 1; } 99%, 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .l {
+      clip-path: none;
+    }
+
+    .idle {
+      display: none;
+    }
+  }
+</style>

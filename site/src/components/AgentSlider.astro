@@ -1,0 +1,1045 @@
+---
+// The scoop.md prompt pasted into six agents, one slide each: every agent reads the site's
+// llms.txt, fetches only the two pages the task needs, then writes the code. Each slide plays
+// its lines in, holds, then the slider moves on; the tabs jump. Paused off-screen;
+// prefers-reduced-motion shows each slide whole and doesn't advance.
+
+const tabs = [
+  ['claude', 'Claude Code'],
+  ['openai', 'Codex'],
+  ['cursor', 'Cursor'],
+  ['githubcopilot', 'Copilot'],
+  ['windsurf', 'Windsurf'],
+  ['googlegemini', 'Gemini CLI'],
+];
+
+// The Claude Code mascot, row by row (X = filled)
+const mascot = ['..XXXXXXX..', '..X.XXX.X..', 'XXXXXXXXXXX', '..XXXXXXX..', '..X.X.X.X..'];
+
+// What the editor agents write. `add` lines are the ones the agent adds.
+const code: [string, boolean][] = [
+  ["import Stripe from 'stripe';", false],
+  ["import express from 'express';", false],
+  ['', false],
+  ['const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);', false],
+  ['export const router = express.Router();', false],
+  ['', false],
+  ["router.post('/webhooks', express.raw({ type: 'application/json' }), (req, res) => {", true],
+  ["  const sig = req.headers['stripe-signature']!;", true],
+  ['  const event = stripe.webhooks.constructEvent(req.body, sig, whsec);', true],
+  ["  if (event.type === 'checkout.session.completed') {", true],
+  ['    fulfil(event.data.object);', true],
+  ['  }', true],
+  ['  res.json({ received: true });', true],
+  ['});', true],
+];
+
+const files = ['src', 'routes', 'webhooks.ts', 'server.ts', 'package.json'];
+
+// The three editor agents: their chrome and the steps their panels show.
+const editors = [
+  {
+    key: 'cursor',
+    title: 'shop — Cursor',
+    panel: 'Agent',
+    who: '',
+    steps: ['Read docs.stripe.com/llms.txt', 'Fetched webhooks.md', 'Fetched webhooks/quickstart.md', 'Edited webhooks.ts  +8'],
+    note: 'The index lists 527 pages. Two cover this task.',
+    input: 'Plan, search, build anything',
+    mode: '∞ Agent · Auto',
+  },
+  {
+    key: 'copilot',
+    title: 'webhooks.ts — shop — Visual Studio Code',
+    panel: 'CHAT',
+    who: 'GitHub Copilot',
+    steps: ['Fetched https://docs.stripe.com/llms.txt', 'Fetched webhooks.md', 'Fetched webhooks/quickstart.md', 'Edited webhooks.ts  +8 −0'],
+    note: 'Using the index to pick the two pages this needs.',
+    input: 'Ask Copilot',
+    mode: 'Agent',
+  },
+  {
+    key: 'windsurf',
+    title: 'shop — Windsurf',
+    panel: 'Cascade',
+    who: '',
+    steps: ['Read URL content docs.stripe.com/llms.txt', 'Read URL content webhooks.md', 'Read URL content webhooks/quickstart.md', 'Edited webhooks.ts  +8'],
+    note: '527 pages indexed. Reading only the two I need.',
+    input: 'Ask anything (⌘L)',
+    mode: 'Write',
+  },
+];
+---
+
+<div class="slider">
+  <div class="tabs" role="tablist" aria-label="Agents">
+    {tabs.map(([logo, name], i) => (
+      <button class="tab" type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-i={i}>
+        <span class="logo" style={`--logo:url(/agents/${logo}.svg)`} aria-hidden="true" />
+        {name}
+        <span class="bar" aria-hidden="true"><span></span></span>
+      </button>
+    ))}
+  </div>
+
+  <div class="slides">
+    <!-- Claude Code -->
+    <div class="slide term cc on" role="tabpanel" aria-label="Claude Code reads the llms.txt, fetches two pages and writes src/routes/webhooks.ts.">
+      <div class="t-bar" aria-hidden="true"><div class="dots"><span></span><span></span><span></span></div><span class="t-title">claude — ~/shop</span></div>
+      <div class="t-body" aria-hidden="true">
+        <div class="cc-welcome">
+          <span class="cc-label">Claude Code <span>v2.1</span></span>
+          <div class="cc-left">
+            <b>Welcome back!</b>
+            <svg class="mascot" viewBox="0 0 11 5" width="66" height="30" shape-rendering="crispEdges">
+              {mascot.flatMap((row, y) => [...row].map((c, x) => c === 'X' && <rect x={x} y={y} width="1" height="1" />))}
+            </svg>
+            <span class="dim">Opus 5.5 · Claude Max</span>
+            <span class="dim">~/shop</span>
+          </div>
+          <div class="cc-right">
+            <span class="cc-head">Tips for getting started</span>
+            <span>Run /init to create a CLAUDE.md file with instructions for Claude</span>
+            <span class="cc-rule"></span>
+            <span class="cc-head">Recent activity</span>
+            <span class="dim">No recent activity</span>
+          </div>
+        </div>
+        <div class="log">
+          <div class="ln user" style="--n:0"><span class="dim">&gt;</span> <span class="mute">[Pasted text #1 +3 lines]</span> add a webhook for checkout.session.completed</div>
+          <div class="ln gap" style="--n:1"><span class="ok">●</span>&nbsp;<b>Fetch</b>(https://docs.stripe.com/llms.txt)</div>
+          <div class="ln sub" style="--n:2"><span class="dim">⎿</span> Received 88.1KB (200 OK)</div>
+          <div class="ln gap" style="--n:3">●&nbsp;The index lists 527 pages. This task needs two of them.</div>
+          <div class="ln gap" style="--n:4"><span class="ok">●</span>&nbsp;<b>Fetch</b>(https://docs.stripe.com/webhooks.md)</div>
+          <div class="ln sub" style="--n:5"><span class="dim">⎿</span> Received 24.3KB (200 OK)</div>
+          <div class="ln gap" style="--n:6"><span class="ok">●</span>&nbsp;<b>Fetch</b>(https://docs.stripe.com/webhooks/quickstart.md)</div>
+          <div class="ln sub" style="--n:7"><span class="dim">⎿</span> Received 9.8KB (200 OK)</div>
+          <div class="ln gap" style="--n:8"><span class="ok">●</span>&nbsp;<b>Write</b>(src/routes/webhooks.ts)</div>
+          <div class="ln sub" style="--n:9"><span class="dim">⎿</span> Wrote 38 lines to src/routes/webhooks.ts</div>
+          <div class="ln gap clay" style="--n:10"><span class="spin">✻</span> Verifying the Stripe signature… <span class="dim">(esc to interrupt)</span></div>
+        </div>
+        <div class="t-input"><span class="dim">&gt;</span><span class="caret"></span></div>
+        <div class="t-hint dim">? for shortcuts</div>
+      </div>
+    </div>
+
+    <!-- Codex CLI -->
+    <div class="slide term cx" role="tabpanel" aria-label="Codex reads the llms.txt with curl, then two pages, and edits src/routes/webhooks.ts.">
+      <div class="t-bar" aria-hidden="true"><div class="dots"><span></span><span></span><span></span></div><span class="t-title">codex — ~/shop</span></div>
+      <div class="t-body" aria-hidden="true">
+        <div class="cx-box">
+          <div><b>&gt;_ OpenAI Codex</b> <span class="dim">(v0.46)</span></div>
+          <div class="cx-gap"><span class="dim">model:</span>&nbsp;&nbsp;&nbsp;&nbsp; gpt-5-codex&nbsp;&nbsp; <span class="cx-cyan">/model</span> <span class="dim">to change</span></div>
+          <div><span class="dim">directory:</span> ~/shop</div>
+        </div>
+        <div class="dim cx-intro">To get started, describe a task or try one of these commands:</div>
+        <div class="cx-intro"><span class="dim">/init</span> - create an AGENTS.md file with instructions for Codex</div>
+        <div class="log">
+          <div class="ln user" style="--n:0">› <span class="mute">[Pasted Content 412 chars]</span> add a webhook for checkout.session.completed</div>
+          <div class="ln gap" style="--n:1">• I’ll read Stripe’s llms.txt first, then only the pages this needs.</div>
+          <div class="ln gap" style="--n:2"><b>•</b> <b>Ran</b> <span class="cx-cyan">curl -s https://docs.stripe.com/llms.txt</span></div>
+          <div class="ln sub" style="--n:3"><span class="dim">└</span> # Stripe Documentation <span class="dim">… +527 lines</span></div>
+          <div class="ln gap" style="--n:4"><b>•</b> <b>Ran</b> <span class="cx-cyan">curl -s https://docs.stripe.com/webhooks.md</span></div>
+          <div class="ln gap" style="--n:5"><b>•</b> <b>Ran</b> <span class="cx-cyan">curl -s https://docs.stripe.com/webhooks/quickstart.md</span></div>
+          <div class="ln gap" style="--n:6"><b>•</b> <b>Edited</b> src/routes/webhooks.ts <span class="ok">(+38</span> <span class="bad">-0)</span></div>
+          <div class="ln sub" style="--n:7"><span class="dim">└</span> <span class="ok">{"+ router.post('/webhooks', express.raw(…), (req, res) => {"}</span></div>
+          <div class="ln gap cx-rule" style="--n:8"><span>─ Worked for 41s ─</span></div>
+        </div>
+        <div class="t-input cx-in"><span>›</span><span class="caret"></span></div>
+        <div class="t-hint dim">100% context left · ? for shortcuts</div>
+      </div>
+    </div>
+
+    {editors.map((e) => (
+      <div class:list={['slide', 'ed', `ed-${e.key}`]} role="tabpanel" aria-label={`${e.title.split(' — ').pop()}: the agent reads the llms.txt, fetches two pages and edits webhooks.ts.`}>
+        <div class="ed-bar" aria-hidden="true"><div class="dots"><span></span><span></span><span></span></div><span class="ed-title">{e.title}</span></div>
+        <div class="ed-body" aria-hidden="true">
+          <div class="ed-act"><span></span><span></span><span></span><span></span></div>
+          <div class="ed-files">
+            <div class="ed-h">SHOP</div>
+            {files.map((f, i) => (
+              <div class:list={['ed-f', { on: f === 'webhooks.ts', dir: i < 2 }]} style={`--d:${i === 1 ? 1 : i > 1 && i < 4 ? 2 : 0}`}>{i < 2 ? '▾ ' : ''}{f}</div>
+            ))}
+          </div>
+          <div class="ed-code">
+            <div class="ed-tabs"><span class="on">webhooks.ts</span><span>server.ts</span></div>
+            <div class="ed-lines">
+              {code.map(([line, add], i) => (
+                <div class:list={['cl', { add }]} style={add ? `--n:${i - 2}` : undefined}><span class="ln-no">{i + 1}</span><span class="cl-t">{line || ' '}</span></div>
+              ))}
+            </div>
+          </div>
+          <div class="ed-panel">
+            <div class="ep-head"><b>{e.panel}</b>{e.key === 'windsurf' && <span class="ep-toggle"><span class="on">Write</span><span>Chat</span></span>}</div>
+            <div class="ep-msgs">
+              <div class="ln ep-user" style="--n:0"><span class="mute">[Pasted]</span> Stripe docs for agents: https://docs.stripe.com/llms.txt … add a webhook for checkout.session.completed</div>
+              {e.who && <div class="ln ep-who" style="--n:1">{e.who}</div>}
+              {e.steps.slice(0, 1).map((s) => <div class="ln ep-step" style="--n:1"><span class="ep-ic">✓</span>{s}</div>)}
+              <div class="ln ep-note" style="--n:2">{e.note}</div>
+              {e.steps.slice(1).map((s, i) => (
+                <div class:list={['ln', 'ep-step', { edit: i === 2 }]} style={`--n:${3 + i}`}><span class="ep-ic">{i === 2 ? '✎' : '✓'}</span>{s}</div>
+              ))}
+            </div>
+            <div class="ep-input">
+              <span class="dim">{e.input}</span>
+              <span class="ep-mode">{e.mode}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <!-- Gemini CLI -->
+    <div class="slide term gm" role="tabpanel" aria-label="Gemini CLI fetches the llms.txt, then two pages, and writes src/routes/webhooks.ts.">
+      <div class="t-bar" aria-hidden="true"><div class="dots"><span></span><span></span><span></span></div><span class="t-title">gemini — ~/shop</span></div>
+      <div class="t-body" aria-hidden="true">
+        <div class="gm-logo">&gt; GEMINI</div>
+        <div class="gm-tips">
+          <div>Tips for getting started:</div>
+          <div>1. Ask questions, edit files, or run commands.</div>
+          <div>2. Be specific for the best results.</div>
+        </div>
+        <div class="log">
+          <div class="ln user gm-user" style="--n:0">&gt; <span class="mute">[Pasted text]</span> add a webhook for checkout.session.completed</div>
+          <div class="ln gm-tool" style="--n:1"><span class="ok">✓</span> <b>WebFetch</b> <span class="dim">Fetching content from https://docs.stripe.com/llms.txt</span></div>
+          <div class="ln gap" style="--n:2"><span class="gm-star">✦</span> The index lists 527 pages. I’ll fetch the two about webhooks.</div>
+          <div class="ln gm-tool" style="--n:3"><span class="ok">✓</span> <b>WebFetch</b> <span class="dim">https://docs.stripe.com/webhooks.md</span></div>
+          <div class="ln gm-tool" style="--n:4"><span class="ok">✓</span> <b>WebFetch</b> <span class="dim">https://docs.stripe.com/webhooks/quickstart.md</span></div>
+          <div class="ln gm-tool" style="--n:5"><span class="ok">✓</span> <b>WriteFile</b> <span class="dim">Writing to src/routes/webhooks.ts</span></div>
+        </div>
+        <div class="t-input gm-in"><span class="gm-star">&gt;</span><span class="dim">Type your message or @path/to/file</span></div>
+        <div class="gm-foot"><span>~/shop <span class="dim">(main*)</span></span><span class="bad">no sandbox</span><span>gemini-2.5-pro <span class="dim">(99% context left)</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.slider')) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.tab')];
+    const slides = [...root.querySelectorAll<HTMLElement>('.slide')];
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let cur = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let visible = false;
+
+    // Each line enters 0.5s after the last; hold the finished slide for 3s.
+    const duration = (s: HTMLElement) => {
+      const n = Math.max(...[...s.querySelectorAll<HTMLElement>('[style*="--n"]')].map((el) => +el.style.getPropertyValue('--n') || 0));
+      return 300 + (n + 1) * 500 + 3000;
+    };
+
+    const show = (i: number) => {
+      clearTimeout(timer);
+      cur = (i + slides.length) % slides.length;
+      slides.forEach((s, k) => s.classList.toggle('on', k === cur));
+      tabs.forEach((t, k) => t.setAttribute('aria-selected', String(k === cur)));
+      // Keep the active tab in view when the row scrolls (small screens)
+      const row = tabs[cur].parentElement!;
+      if (row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: tabs[cur].offsetLeft - (row.clientWidth - tabs[cur].offsetWidth) / 2, behavior: 'smooth' });
+      }
+      const s = slides[cur];
+      s.classList.remove('play');
+      void s.offsetWidth; // restart the line animations
+      s.classList.add(still ? 'still' : 'play');
+      if (still || !visible) return;
+      const ms = duration(s);
+      root.style.setProperty('--dur', `${ms}ms`);
+      timer = setTimeout(() => show(cur + 1), ms);
+    };
+
+    tabs.forEach((t, k) => t.addEventListener('click', () => show(k)));
+    root.querySelector('.tabs')!.addEventListener('keydown', (e) => {
+      const k = (e as KeyboardEvent).key;
+      if (k !== 'ArrowRight' && k !== 'ArrowLeft') return;
+      show(cur + (k === 'ArrowRight' ? 1 : -1));
+      tabs[cur].focus();
+    });
+
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) show(cur);
+      else clearTimeout(timer);
+    }, { threshold: 0.3 }).observe(root);
+  }
+</script>
+
+<style>
+  .slider {
+    --dur: 8000ms;
+    text-align: left;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--ink-2);
+    font: 500 0.9375rem/1 var(--font-body);
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .tab:hover {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .tab[aria-selected='true'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .logo {
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    -webkit-mask: var(--logo) center / contain no-repeat;
+    mask: var(--logo) center / contain no-repeat;
+  }
+
+  /* Progress along the bottom of the active tab */
+  .bar {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 5px;
+    height: 2px;
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .bar span {
+    display: block;
+    height: 100%;
+    background: var(--mark-2);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .tab[aria-selected='true'] .bar {
+    opacity: 1;
+  }
+
+  .slider:has(.play) .tab[aria-selected='true'] .bar span {
+    animation: fill var(--dur) linear forwards;
+  }
+
+  @keyframes fill {
+    to { transform: scaleX(1); }
+  }
+
+  /* ── Slides, stacked in one cell so the frame never jumps ── */
+  .slides {
+    display: grid;
+  }
+
+  .slide {
+    grid-area: 1 / 1;
+    min-height: 560px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px -36px rgba(40, 25, 10, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(0.99);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s 0.4s;
+  }
+
+  .slide.on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #353431;
+  }
+
+  .dim { color: #7d7973; }
+  .mute { color: #a8a39c; }
+  .ok { color: #4fc27a; }
+  .bad { color: #f0716b; }
+
+  /* Lines play in one after another */
+  .ln {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  .play .ln,
+  .play .cl.add {
+    animation: line 0.35s ease forwards;
+    animation-delay: calc(0.3s + var(--n) * 0.5s);
+  }
+
+  .still .ln,
+  .still .cl.add {
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes line {
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ── Terminal slides ── */
+  .term {
+    display: flex;
+    flex-direction: column;
+    background: #0d0d0c;
+    border: 1px solid #2a2927;
+    color: #e6e3de;
+    font: 400 13px/1.6 var(--font-mono);
+  }
+
+  .t-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    flex: none;
+    padding: 0 14px;
+    border-bottom: 1px solid #1f1e1c;
+  }
+
+  .t-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11.5px;
+    color: #7d7973;
+  }
+
+  .t-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 18px 20px 14px;
+  }
+
+  .log {
+    flex: 1;
+    margin-top: 18px;
+  }
+
+  .log .ln {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gap {
+    margin-top: 10px;
+  }
+
+  .sub {
+    padding-left: 18px;
+    color: #a8a39c;
+  }
+
+  .user {
+    padding: 6px 10px;
+    margin: 0 -10px;
+    border-radius: 4px;
+    background: #1c1b1a;
+  }
+
+  .t-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px 12px;
+    border: 1px solid #3a3936;
+    border-radius: 6px;
+  }
+
+  .caret {
+    width: 8px;
+    height: 16px;
+    background: #e6e3de;
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .t-hint {
+    margin-top: 6px;
+    padding-left: 2px;
+    font-size: 12px;
+  }
+
+  /* Claude Code */
+  .cc {
+    --clay: #d97757;
+  }
+
+  .cc-welcome {
+    position: relative;
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    border: 1px solid var(--clay);
+    border-radius: 6px;
+    padding: 18px 0 14px;
+    margin-top: 6px;
+  }
+
+  .cc-label {
+    position: absolute;
+    top: -0.8em;
+    left: 14px;
+    padding: 0 6px;
+    background: #0d0d0c;
+    color: var(--clay);
+  }
+
+  .cc-label span {
+    color: #7d7973;
+  }
+
+  .cc-left {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    padding: 0 16px;
+    border-right: 1px solid var(--clay);
+    text-align: center;
+  }
+
+  .cc-left b {
+    margin-bottom: 8px;
+  }
+
+  .mascot {
+    fill: var(--clay);
+    margin-bottom: 8px;
+  }
+
+  .cc-right {
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    padding: 0 18px;
+  }
+
+  .cc-head {
+    color: var(--clay);
+  }
+
+  .cc-rule {
+    height: 1px;
+    margin: 8px 0;
+    background: var(--clay);
+    opacity: 0.6;
+  }
+
+  .clay {
+    color: var(--clay);
+  }
+
+  .spin {
+    display: inline-block;
+  }
+
+  .play .spin {
+    animation: spin 2.4s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Codex */
+  .cx-box {
+    align-self: flex-start;
+    padding: 10px 16px;
+    border: 1px solid #3a3936;
+    border-radius: 6px;
+  }
+
+  .cx-gap {
+    margin-top: 10px;
+  }
+
+  .cx-intro {
+    margin-top: 2px;
+  }
+
+  .cx-box + .cx-intro {
+    margin-top: 14px;
+  }
+
+  .cx-cyan {
+    color: #67c7d8;
+  }
+
+  .cx .user {
+    background: #1a1a19;
+  }
+
+  .cx-rule {
+    color: #7d7973;
+  }
+
+  .cx-in {
+    border-color: #2c2b29;
+    background: #161615;
+  }
+
+  /* Gemini CLI */
+  .gm-logo {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, #4796e3, #9177c7 55%, #ca6673);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gm-tips {
+    margin-top: 16px;
+    color: #c8c4be;
+  }
+
+  .gm-user {
+    border-left: 2px solid #9177c7;
+    border-radius: 0;
+    background: transparent;
+    margin: 0;
+  }
+
+  .gm-tool {
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: 1px solid #3a3936;
+    border-radius: 8px;
+  }
+
+  .gm-star {
+    color: #9177c7;
+  }
+
+  .gm-in {
+    border-color: #4796e3;
+  }
+
+  .gm-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #4796e3;
+    white-space: nowrap;
+  }
+
+  .gm-foot > span:last-child {
+    color: #c8c4be;
+  }
+
+  /* ── Editor slides ── */
+  .ed {
+    --bg: #181818;
+    --side: #141414;
+    --rule: #2a2a2a;
+    --accent: #e6e3de;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: #cfcbc5;
+    font: 400 12.5px/1.55 var(--font-body);
+  }
+
+  .ed-copilot {
+    --bg: #1f1f1f;
+    --side: #181818;
+    --rule: #2b2b2b;
+    --accent: #0078d4;
+  }
+
+  .ed-windsurf {
+    --bg: #161b1a;
+    --side: #111514;
+    --rule: #26302e;
+    --accent: #3fd1b0;
+  }
+
+  .ed-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    flex: none;
+    padding: 0 14px;
+    background: var(--side);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ed-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11.5px;
+    color: #8a857e;
+    white-space: nowrap;
+  }
+
+  .ed-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 44px 160px minmax(0, 1fr) 310px;
+    min-height: 0;
+  }
+
+  .ed-act {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 16px;
+    padding-top: 14px;
+    background: var(--side);
+    border-right: 1px solid var(--rule);
+  }
+
+  .ed-act span {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid #5a5650;
+  }
+
+  .ed-act span:first-child {
+    border-color: #cfcbc5;
+  }
+
+  .ed-files {
+    padding: 10px 0;
+    background: var(--side);
+    border-right: 1px solid var(--rule);
+  }
+
+  .ed-h {
+    padding: 0 14px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #8a857e;
+  }
+
+  .ed-f {
+    padding: 2px 14px 2px calc(14px + var(--d) * 12px);
+    color: #a8a39c;
+  }
+
+  .ed-f.on {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: #f4f2ee;
+  }
+
+  .ed-code {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .ed-tabs {
+    display: flex;
+    background: var(--side);
+    border-bottom: 1px solid var(--rule);
+    font-size: 12px;
+  }
+
+  .ed-tabs span {
+    padding: 8px 14px;
+    color: #8a857e;
+    border-right: 1px solid var(--rule);
+  }
+
+  .ed-tabs .on {
+    background: var(--bg);
+    color: #f4f2ee;
+    box-shadow: inset 0 1px 0 var(--accent);
+  }
+
+  .ed-lines {
+    padding: 12px 0;
+    font: 400 12px/1.75 var(--font-mono);
+    overflow: hidden;
+  }
+
+  .cl {
+    display: flex;
+    white-space: pre;
+  }
+
+  .ln-no {
+    flex: none;
+    width: 40px;
+    padding-right: 14px;
+    text-align: right;
+    color: #5a5650;
+  }
+
+  .cl-t {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cl.add {
+    opacity: 0;
+    background: rgba(79, 194, 122, 0.12);
+    box-shadow: inset 2px 0 0 #4fc27a;
+  }
+
+  .ed-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--side);
+    border-left: 1px solid var(--rule);
+  }
+
+  .ep-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 12px;
+  }
+
+  .ep-head b {
+    font-weight: 600;
+    color: #f4f2ee;
+  }
+
+  .ep-toggle {
+    display: flex;
+    padding: 2px;
+    border-radius: 6px;
+    background: #0c0f0e;
+  }
+
+  .ep-toggle span {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #8a857e;
+  }
+
+  .ep-toggle .on {
+    background: #26302e;
+    color: var(--accent);
+  }
+
+  .ep-msgs {
+    flex: 1;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .ep-user {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #262626;
+    color: #e6e3de;
+    overflow-wrap: anywhere;
+  }
+
+  .ed-copilot .ep-user {
+    background: #2a2d2e;
+  }
+
+  .ed-windsurf .ep-user {
+    background: #1e2725;
+  }
+
+  .ep-who {
+    margin-top: 4px;
+    font-weight: 600;
+    color: #f4f2ee;
+  }
+
+  .ep-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--rule);
+    color: #a8a39c;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ep-ic {
+    flex: none;
+    color: #4fc27a;
+  }
+
+  .ep-step.edit {
+    color: #e6e3de;
+  }
+
+  .ep-step.edit .ep-ic {
+    color: var(--accent);
+  }
+
+  .ed-cursor .ep-step.edit .ep-ic {
+    color: #e6e3de;
+  }
+
+  .ep-note {
+    padding: 2px 2px;
+    color: #cfcbc5;
+  }
+
+  .ep-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 14px 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #3a3936;
+    background: var(--bg);
+  }
+
+  .ep-mode {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #2a2a2a;
+    color: #cfcbc5;
+    font-size: 11px;
+  }
+
+  .ed-copilot .ep-input {
+    border-color: var(--accent);
+  }
+
+  .ed-windsurf .ep-mode {
+    background: #26302e;
+    color: var(--accent);
+  }
+
+  /* ── Small screens: terminals wrap, editors show the agent panel only ── */
+  @media (max-width: 860px) {
+    .ed-body {
+      grid-template-columns: minmax(0, 1fr) 280px;
+    }
+
+    .ed-act,
+    .ed-files {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .tabs {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: 0 -1rem 1.25rem;
+      padding: 0 1rem;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      flex: none;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.875rem;
+    }
+
+    .slide {
+      min-height: 520px;
+    }
+
+    .term {
+      font-size: 11px;
+    }
+
+    .t-body {
+      padding: 14px 14px 12px;
+    }
+
+    .log .ln {
+      white-space: normal;
+      word-break: break-all;
+    }
+
+    .cc-welcome {
+      grid-template-columns: 1fr;
+    }
+
+    .cc-left {
+      border-right: 0;
+    }
+
+    .cc-right,
+    .cx-intro,
+    .gm-tips {
+      display: none;
+    }
+
+    .gm-logo {
+      font-size: 30px;
+    }
+
+    .gm-foot > span:nth-child(2) {
+      display: none;
+    }
+
+    .ed-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ed-code {
+      display: none;
+    }
+
+    .ed-title {
+      font-size: 10.5px;
+    }
+  }
+</style>

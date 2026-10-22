@@ -12,7 +12,7 @@ export const timing = {
   // While the popup is open, how often the background crawl is checked.
   followMs: 5_000,
   searchDebounceMs: 300,
-  // How long the Copy button says "Copied ✓".
+  // How long the Copy button says "Copied".
   copiedLabelMs: 2_000,
 };
 

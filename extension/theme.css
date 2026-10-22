@@ -1,37 +1,42 @@
-/* Design tokens shared by the popup and the options page. Restyle here. */
+/* Design tokens shared by the popup and the options page. Restyle here.
+   Same language as scoop.md: charcoal on warm off-white, near-black in dark, the icon's
+   orange for the one main action and small accents, Geist throughout. */
+@font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+
 :root {
-  /* Colour. White on --accent is 5.2:1 (WCAG AA). */
-  --bg: #ffeee0; --card: #ffffff; --fg: #2b1b10; --muted: #7a5a44; --line: #f3dccb;
-  --accent: #c2410c; --accent-hover: #a8380a; --brand: #c2410c; --link: #c2410c; --on-accent: #ffffff; --accent-soft: #fff4ec; --knob: #ffffff; --switch-off: #9c8574;
-  --well: #fff8f3; --ok: #2e7d32; --warn: #9a5b00; --err: #b3261e; --focus: #c2410c;
-  --shadow: 0 1px 2px rgba(122, 60, 20, 0.06), 0 6px 20px rgba(122, 60, 20, 0.08);
+  /* Colour. White on --accent is 3.1:1, so its label is bold and large; --link is the AA orange for text. */
+  --bg: #f6f4f0; --card: #ffffff; --fg: #1d1c1a; --muted: #8f8b85; --line: #e9e5df;
+  --accent: #ff5e1f; --accent-2: #ff8a3d; --accent-hover: #f05214; --brand: #1d1c1a; --link: #e2500f; --on-accent: #ffffff; --accent-soft: #ffeadf; --knob: #ffffff; --switch-off: #94908a;
+  --well: #f6f4f0; --hover: #f1eee9; --ok: #23a058; --warn: #9a5b00; --err: #b3261e; --focus: #ff5e1f;
+  --shadow: 0 1px 2px rgba(30, 25, 20, 0.04), 0 8px 24px -10px rgba(30, 25, 20, 0.12);
 
   /* Type */
-  --font: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, Inter, "Segoe UI", system-ui, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, monospace;
-  --text: 13px; --text-sm: 12px; --text-xs: 11px; --text-md: 15px; --text-lg: 19px; --leading: 1.45;
-  --weight: 400; --weight-medium: 500; --weight-strong: 600; --weight-bold: 700;
+  --font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --text: 13px; --text-sm: 12px; --text-xs: 11px; --text-md: 14px; --text-lg: 17px; --leading: 1.45;
+  --weight: 400; --weight-medium: 500; --weight-strong: 600; --weight-bold: 650;
 
   /* Space and shape */
-  --width: 360px; --options-width: 560px; --pad: 20px; --gap: 12px; --gap-sm: 8px; --card-pad: 16px;
-  --radius-card: 16px; --radius: 12px; --radius-sm: 8px; --icon: 18px; --icon-button: 32px;
-  --stage-height: 220px; --celebrate-size: 72px; --reveal-ms: 220ms;
+  --width: 360px; --options-width: 560px; --pad: 14px; --gap: 12px; --gap-sm: 8px; --card-pad: 14px;
+  --radius-card: 16px; --radius: 12px; --radius-sm: 9px; --icon: 16px; --icon-button: 30px;
+  --stage-height: 220px; --celebrate-size: 64px; --reveal-ms: 220ms;
 
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1f1510; --card: #2b2623; --fg: #f5ece6; --muted: #b5a397; --line: #3d3631;
-    --accent-soft: #3a2a20; --switch-off: #85776c; --well: #231f1c; --link: #ff9a5c; --brand: #ff9a5c;
-    --ok: #8fd694; --warn: #f0b64d; --err: #f28b82; --focus: #ff9a5c;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+    --bg: #0e0e0d; --card: #181817; --fg: #f4f2ee; --muted: #8a857e; --line: #262523;
+    --brand: #f4f2ee; --link: #ff8a3d; --accent-soft: #2c1a10; --switch-off: #6b6762; --knob: #f4f2ee;
+    --well: #111110; --hover: #222120; --ok: #4fc27a; --warn: #f0b64d; --err: #f28b82; --focus: #ff8a3d;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -12px rgba(0, 0, 0, 0.7);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #1f1510; --card: #2b2623; --fg: #f5ece6; --muted: #b5a397; --line: #3d3631;
-  --accent-soft: #3a2a20; --switch-off: #85776c; --well: #231f1c; --link: #ff9a5c; --brand: #ff9a5c;
-  --ok: #8fd694; --warn: #f0b64d; --err: #f28b82; --focus: #ff9a5c;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+  --bg: #0e0e0d; --card: #181817; --fg: #f4f2ee; --muted: #8a857e; --line: #262523;
+  --brand: #f4f2ee; --link: #ff8a3d; --accent-soft: #2c1a10; --switch-off: #6b6762; --knob: #f4f2ee;
+  --well: #111110; --hover: #222120; --ok: #4fc27a; --warn: #f0b64d; --err: #f28b82; --focus: #ff8a3d;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -12px rgba(0, 0, 0, 0.7);
   color-scheme: dark;
 }

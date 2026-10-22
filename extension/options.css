@@ -1,20 +1,21 @@
-/* Settings: a header on the tinted background, one white card per setting. */
+/* Settings: a slim header, one card per setting. */
 /* Tokens live in theme.css; rules below use only var(--…). */
 [hidden] { display: none !important; }
 * { box-sizing: border-box; }
-body { max-width: var(--options-width); margin: 0 auto; padding: var(--pad); background: var(--bg); color: var(--fg); font: var(--weight) var(--text-md)/var(--leading) var(--font); }
+body { max-width: var(--options-width); margin: 0 auto; padding: 24px; background: var(--bg); color: var(--fg); font: var(--weight) var(--text-md)/var(--leading) var(--font); -webkit-font-smoothing: antialiased; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 button, input { font: inherit; color: inherit; }
 
-.bar { padding: var(--pad) 0 var(--gap); }
-.brand { display: flex; align-items: center; gap: var(--gap-sm); color: var(--brand); font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; }
-.brand img { border-radius: var(--radius-sm); }
+.bar { padding: 8px 0 16px; }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--brand); font-size: 20px; font-weight: var(--weight-bold); letter-spacing: -0.03em; }
+.brand .ext { color: var(--muted); font-weight: var(--weight-medium); }
+.brand img { border-radius: 7px; }
 
-main { display: grid; gap: var(--gap); }
-.card { padding: var(--card-pad); border-radius: var(--radius-card); background: var(--card); box-shadow: var(--shadow); }
+main { display: grid; gap: 10px; }
+.card { padding: 18px 20px; border-radius: var(--radius-card); background: var(--card); box-shadow: var(--shadow); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: var(--card-pad); }
 .text { display: grid; gap: 2px; }
-.title { font-weight: var(--weight-bold); }
+.title { font-weight: var(--weight-strong); letter-spacing: -0.01em; }
 .meta { color: var(--muted); font-size: var(--text); }
 .meta a { color: var(--link); }
 
@@ -24,14 +25,14 @@ main { display: grid; gap: var(--gap); }
 .toggle:checked { background: var(--accent); }
 .toggle:checked::after { transform: translateX(18px); }
 
-.segmented { display: flex; padding: 3px; border-radius: var(--radius); background: var(--accent-soft); }
+.segmented { display: flex; padding: 3px; border-radius: 999px; background: var(--well); box-shadow: inset 0 0 0 1px var(--line); }
 .segmented input { position: absolute; opacity: 0; pointer-events: none; }
-.segmented span { display: block; padding: 4px var(--gap); border-radius: var(--radius-sm); color: var(--muted); font-size: var(--text); font-weight: var(--weight-strong); cursor: pointer; }
-.segmented input:checked + span { background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
+.segmented span { display: block; padding: 5px 12px; border-radius: 999px; color: var(--muted); font-size: var(--text); font-weight: var(--weight-medium); cursor: pointer; }
+.segmented input:checked + span { background: var(--fg); color: var(--bg); }
 .segmented input:focus-visible + span { outline: 2px solid var(--focus); }
 
-.button { padding: 6px var(--card-pad); border: 1.5px solid var(--line); border-radius: var(--radius); background: none; font-weight: var(--weight-strong); cursor: pointer; }
-.button:hover { border-color: var(--muted); }
+.button { padding: 7px 16px; border: 0; border-radius: 999px; background: var(--hover); font-weight: var(--weight-medium); cursor: pointer; }
+.button:hover { filter: brightness(0.96); }
 
 .foot { display: flex; gap: var(--card-pad); padding: var(--pad) var(--gap-sm); color: var(--muted); font-size: var(--text-sm); }
 .foot a { color: var(--muted); }

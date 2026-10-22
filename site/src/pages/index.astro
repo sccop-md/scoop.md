@@ -1,9 +1,26 @@
 ---
 import Base from '../layouts/Base.astro';
-import HeroAnimation from '../components/HeroAnimation.astro';
+import ProductDemo from '../components/ProductDemo.astro';
+import AgentSlider from '../components/AgentSlider.astro';
+import HeroFlow from '../components/HeroFlow.astro';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
 export const prerender = true;
+
+const cta = CHROME_STORE_URL ? 'Add to Chrome' : 'Coming soon to Chrome';
+
+// The closing card's tile grid, with docs sites from the library on the edges: 10 × 6 on wide
+// screens; on phones 5 × 8, with the sites in the top and bottom rows only (each cell carries
+// both) and the rows between faded out. Their icons come from Google's favicon service, as on the library page.
+const docsHosts = ['docs.stripe.com', 'docs.python.org', 'php.net', 'docs.pytest.org', 'docs.celeryq.dev', 'docs.vapi.ai', 'eslint.org', 'hono.dev', 'jquery.com', 'blender.org', 'farmjs.dev', 'developer.unipile.com'];
+const wideAt = [1, 4, 8, 10, 19, 21, 38, 40, 49, 51, 55, 58];
+const phoneAt = [0, 1, 2, 3, 4, 35, 36, 37, 38, 39];
+const tiles = Array.from({ length: 60 }, (_, i) => ({
+  wide: wideAt.includes(i) ? docsHosts[wideAt.indexOf(i)] : null,
+  phone: phoneAt.includes(i) ? docsHosts[phoneAt.indexOf(i)] : null,
+}));
+const favicon = (host: string) => `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+const ctaHref = CHROME_STORE_URL ?? GITHUB_URL;
 
 const agents = [
   ['claude', 'Claude Code'],
@@ -15,233 +32,737 @@ const agents = [
 ];
 
 const steps = [
-  { n: '01', label: 'Open a docs page' },
-  { n: '02', label: 'Click scoop.md' },
-  { n: '03', label: 'Paste into your agent' },
+  { label: 'Open a docs page', body: 'The badge lights up when the site has an llms.txt.' },
+  { label: 'Click scoop.md', body: 'The llms.txt link and agent instructions are copied.' },
+  { label: 'Paste into your agent', body: 'It reads the index, then fetches only what it needs.' },
 ];
+
 ---
 
 <Base>
+  <!-- Hero -->
   <section class="hero wrap" aria-labelledby="hero-title">
-    <h1 id="hero-title">Scoop <span class="mark">any</span> doc.</h1>
-    <p class="lede">One click on any site copies its llms.txt for your coding agent.</p>
-
+    <p class="product"><img src="/icon-192.png" width="30" height="30" alt="" />scoop.md for Chrome</p>
+    <h1 id="hero-title">Scoop any doc</h1>
+    <p class="lede">One click copies any docs site’s llms.txt for your coding agent.</p>
     <div class="cta">
-      <a class="btn" href={CHROME_STORE_URL ?? GITHUB_URL} data-cta={CHROME_STORE_URL ? 'chrome_store' : 'github_coming_soon'}>
-        {CHROME_STORE_URL ? 'Add to Chrome' : 'Coming soon to Chrome'} <span aria-hidden="true">→</span>
-      </a>
-      <div class="quiet-links">
-        <a class="quiet" href="/library" data-cta="library">Browse library</a>
-        <span class="quiet-sep" aria-hidden="true">·</span>
-        <a class="quiet" href={GITHUB_URL} data-cta="github">GitHub</a>
-      </div>
+      <a class="btn" href={ctaHref} data-cta={CHROME_STORE_URL ? 'chrome_store' : 'github_coming_soon'}>{cta}</a>
+      <a class="btn btn--soft" href="/library" data-cta="library">Browse library</a>
     </div>
 
-    <HeroAnimation />
+    <div class="flow-wrap">
+      <HeroFlow />
+    </div>
+
+    <div class="paste-strip">
+      <p>Works with</p>
+      <ul>
+        {agents.map(([logo, name]) => (
+          <li><span class="logo" style={`--logo:url(/agents/${logo}.svg)`} aria-hidden="true" />{name}</li>
+        ))}
+      </ul>
+    </div>
   </section>
 
-  <!-- How it works: three-step strip -->
-  <section class="steps-section wrap reveal-section" aria-labelledby="steps-title">
-    <p class="eyebrow" id="steps-title">how it works</p>
-    <ol class="steps">
-      {steps.map(({ n, label }) => (
-        <li class="step">
-          <span class="step-n" aria-hidden="true">{n}</span>
-          <span class="step-label">{label}</span>
-        </li>
-      ))}
-    </ol>
-  </section>
+  <!-- Dark panel -->
+  <section class="panel-wrap" aria-labelledby="panel-title">
+    <div class="panel">
+      <div class="panel-head reveal">
+        <p class="product product--dark"><img src="/icon-192.png" width="28" height="28" alt="" />In your toolbar</p>
+        <h2 id="panel-title" class="big">The <span class="mark">Full Map</span> of Any Doc</h2>
+        <p class="sub">llms.txt plus agent instructions, in one click.</p>
+        <div class="cta">
+          <a class="btn btn--light" href={ctaHref} data-cta="panel_chrome">{cta}</a>
+          <a class="btn btn--ghost" href="#gets">See what’s copied</a>
+        </div>
+      </div>
 
-  <!-- Paste into -->
-  <section class="agents-section wrap reveal-section" aria-labelledby="agents-title">
-    <p class="eyebrow" id="agents-title">paste into</p>
-    <ul class="agents">
-      {
-        agents.map(([logo, name]) => (
-          <li>
-            <span class="logo" style={`--logo:url(/agents/${logo}.svg)`} aria-hidden="true" />
-            {name}
+      <div class="demo-wrap reveal">
+        <ProductDemo />
+      </div>
+
+      <div class="row-head reveal">
+        <h3 class="mid">Three moves. No setup.</h3>
+        <a class="btn btn--ghost" href="/library">Browse library</a>
+      </div>
+
+      <ol class="steps reveal">
+        {steps.map(({ label, body }, i) => (
+          <li class="step">
+            <div class="vis" aria-hidden="true">
+              {i === 0 && (
+                <div class="v-url">
+                  <span class="v-dim">docs.stripe.com/webhooks</span>
+                  <span class="v-ext"><img src="/favicon.png" width="16" height="16" alt="" /><span class="v-badge">2</span></span>
+                </div>
+              )}
+              {i === 1 && (
+                <div class="v-copy">
+                  <span class="v-btn">Copy llms.txt + instructions</span>
+                  <svg class="v-cursor" width="18" height="18" viewBox="0 0 20 20"><path d="M4 2l12 8-6 1-3 7z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg>
+                </div>
+              )}
+              {i === 2 && (
+                <div class="v-term"><span class="v-gt">&gt;</span> <span class="v-dim">[Pasted text #1 +3 lines]</span><span class="v-caret"></span></div>
+              )}
+            </div>
+            <span class="step-n">Step {i + 1}</span>
+            <h4>{label}</h4>
+            <p>{body}</p>
           </li>
-        ))
-      }
-    </ul>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- What your agent gets -->
+  <section id="gets" class="gets wrap" aria-labelledby="gets-title">
+    <h2 id="gets-title" class="h2 reveal">A map, not a pile of pages</h2>
+
+    <div class="split reveal">
+      <h3>Your agent reads the index, then opens only what it needs</h3>
+      <p><strong>A short prompt, not the docs.</strong> The llms.txt link plus the site’s own instructions for agents.</p>
+    </div>
+
+    <div class="stage reveal">
+      <AgentSlider />
+    </div>
+  </section>
+
+  <!-- Closer: docs sites from the library around the one ask -->
+  <section class="wrap closer-wrap" aria-labelledby="closer-title">
+    <div class="closer reveal">
+      <ul class="tiles" aria-hidden="true">
+        {tiles.map(({ wide, phone }, i) => (
+          <li class:list={{ 'on-wide': wide, 'on-phone': phone }} style={`--d:${(i * 37) % 11}`}>
+            {wide && <img class="t-wide" src={favicon(wide)} width="28" height="28" alt="" loading="lazy" referrerpolicy="no-referrer" />}
+            {phone && <img class="t-phone" src={favicon(phone)} width="28" height="28" alt="" loading="lazy" referrerpolicy="no-referrer" />}
+          </li>
+        ))}
+      </ul>
+      <div class="closer-copy">
+        <img class="closer-icon" src="/icon-192.png" width="64" height="64" alt="" />
+        <h2 id="closer-title" class="closer-h">Every doc, one click away.</h2>
+        <p class="closer-sub">Free, open source, no account.</p>
+        <div class="cta">
+          <a class="btn" href={ctaHref} data-cta="closer">{cta}</a>
+          <a class="btn btn--soft" href="/library" data-cta="closer_library">Browse library</a>
+        </div>
+        <p class="keys">or press <kbd>Alt</kbd><kbd>Shift</kbd><kbd>C</kbd> on any docs page</p>
+      </div>
+    </div>
   </section>
 </Base>
 
 <script>
-  // Scroll-reveal: sections below-the-fold enter with a subtle slide-up.
-  // Sections already in-viewport on first paint are made visible immediately.
-  const els = document.querySelectorAll<HTMLElement>('.reveal-section');
-  if (els.length) {
-    const vh = window.innerHeight;
-
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          (e.target as HTMLElement).classList.add('visible');
-          io.unobserve(e.target);
-        }
-      }),
-      { threshold: 0.08 }
-    );
-
-    els.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < vh) {
-        // Already in viewport on load: show immediately, no transition
-        el.classList.add('visible');
-      } else {
-        // Below fold: enable hidden state + observe
-        el.setAttribute('data-reveal', 'true');
-        io.observe(el);
+  // Scroll-reveal: blocks below the fold enter with a subtle slide-up.
+  // Blocks already in view on first paint are shown immediately.
+  const els = document.querySelectorAll<HTMLElement>('.reveal');
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
       }
-    });
-  }
+    }),
+    { threshold: 0.08 }
+  );
+  els.forEach((el) => {
+    if (el.getBoundingClientRect().top < window.innerHeight) return;
+    el.setAttribute('data-reveal', '');
+    io.observe(el);
+  });
 </script>
 
 <style>
-  /* ── Hero ── */
-  .hero {
-    display: grid;
-    justify-items: center;
-    text-align: center;
-    padding-top: clamp(4rem, 14vh, 9rem);
-    padding-bottom: clamp(2rem, 6vh, 4rem);
+  /* ── Shared type ── */
+  .product {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font: 450 1.25rem/1 var(--font-body);
+    letter-spacing: -0.02em;
+    color: var(--ink-2);
+    margin: 0 0 1.5rem;
+  }
+
+  .product img {
+    border-radius: 8px;
+  }
+
+  .product--dark {
+    color: #b7b2ab;
   }
 
   h1 {
-    font-size: clamp(3rem, 1.5rem + 8vw, 7rem);
-    font-weight: 800;
-    letter-spacing: -0.045em;
-    line-height: 0.95;
+    font-size: clamp(3rem, 1.6rem + 6vw, 5.5rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1;
     margin: 0 0 1.25rem;
   }
 
-  .lede {
-    font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
-    color: var(--ink-2);
-    max-width: 34ch;
+  .big {
+    font-size: clamp(2.4rem, 1.4rem + 4vw, 4.5rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    margin: 0 0 1.1rem;
+  }
+
+  .h2 {
+    font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.08;
     margin: 0;
+  }
+
+  .mid {
+    font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    margin: 0 0 0.75rem;
+  }
+
+  .lede,
+  .sub {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+    color: var(--ink-2);
+    letter-spacing: -0.01em;
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+
+  .sub--left {
+    margin: 0;
+    max-width: 52ch;
+  }
+
+  .center {
+    display: grid;
+    justify-items: center;
+    text-align: center;
   }
 
   .cta {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    gap: 0.75rem 1.5rem;
-    margin: 2.25rem 0 2.5rem;
-  }
-
-  .quiet-links {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .quiet {
-    color: var(--ink-2);
-    font-weight: 500;
-  }
-
-  .quiet-sep {
-    color: var(--muted);
-    font-size: 0.75rem;
-  }
-
-  /* ── Steps section ── */
-  .steps-section {
-    padding-top: clamp(2rem, 5vh, 4rem);
-    padding-bottom: clamp(2rem, 5vh, 4rem);
-    border-top: 1px solid var(--rule);
-  }
-
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .step {
-    display: flex;
-    align-items: baseline;
     gap: 0.75rem;
-    flex: 1;
-    min-width: 160px;
+    margin-top: 2rem;
   }
 
-  .step-n {
-    font: 600 0.78rem/1 var(--font-mono);
-    color: var(--accent);
-    flex-shrink: 0;
+  /* ── Hero ── */
+  .hero {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    padding-top: clamp(4rem, 12vw, 7.5rem);
   }
 
-  .step-label {
-    font: 500 1rem/1.3 var(--font-body);
-    color: var(--ink);
+  .flow-wrap {
+    width: 100%;
+    display: grid;
+    justify-items: center;
+    margin-top: clamp(2.5rem, 6vw, 4rem);
   }
 
-  /* ── Agents section ── */
-  .agents-section {
-    padding-top: clamp(2rem, 5vh, 4rem);
-    padding-bottom: clamp(3rem, 8vh, 6rem);
-    border-top: 1px solid var(--rule);
+  .paste-strip {
+    width: 100%;
+    margin-top: clamp(3rem, 7vw, 4.5rem);
   }
 
-  .agents {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    max-width: 52rem;
+  .paste-strip p {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0 0 1.25rem;
+  }
+
+  .paste-strip ul {
+    list-style: none;
     margin: 0;
     padding: 0;
-    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem clamp(1.5rem, 4vw, 3rem);
   }
 
-  .agents li {
+  .paste-strip li {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.8rem;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    font-size: 0.875rem;
+    gap: 0.55rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    color: var(--ink);
-    white-space: nowrap;
+    letter-spacing: -0.02em;
+    color: var(--muted);
   }
 
   .logo {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
     flex: none;
     background: currentColor;
     -webkit-mask: var(--logo) center / contain no-repeat;
     mask: var(--logo) center / contain no-repeat;
   }
 
-  /* ── Scroll-reveal entrance ── */
-  /* Only applies once JS marks the section with data-reveal */
-  .reveal-section[data-reveal] {
-    opacity: 0;
-    transform: translateY(22px);
-    transition: opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1);
+  /* ── Dark panel ── */
+  .panel-wrap {
+    padding: var(--section) clamp(8px, 1.6vw, 24px) 0;
   }
 
-  .reveal-section[data-reveal].visible {
+  .panel {
+    max-width: 1392px;
+    margin: 0 auto;
+    border-radius: var(--radius-lg);
+    background: var(--panel);
+    color: #f4f2ee;
+    padding: clamp(4rem, 9vw, 6.5rem) var(--gutter) clamp(3rem, 7vw, 5rem);
+  }
+
+  .panel > * {
+    max-width: 1024px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .panel-head {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .panel .sub {
+    color: #b7b2ab;
+  }
+
+  .btn--light {
+    background: #ffffff;
+    color: #121211;
+  }
+
+  .btn--ghost {
+    background: #262523;
+    color: #f4f2ee;
+  }
+
+  .btn--ghost:hover {
     opacity: 1;
-    transform: translateY(0);
+    background: #302f2c;
+  }
+
+  .demo-wrap {
+    margin-top: clamp(3rem, 7vw, 4.5rem);
+  }
+
+  .row-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    margin-top: clamp(4rem, 9vw, 6rem);
+  }
+
+  .panel .sub--left {
+    color: #9a958e;
+  }
+
+  .steps {
+    list-style: none;
+    padding: 0;
+    margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 24px;
+    border-radius: var(--radius-card);
+    background: var(--panel-2);
+  }
+
+  /* A small piece of the real UI for each step */
+  .vis {
+    display: grid;
+    place-items: center;
+    height: 132px;
+    margin-bottom: 22px;
+    padding: 0 16px;
+    border-radius: 14px;
+    background:
+      radial-gradient(120% 100% at 50% 0%, rgba(255, 138, 61, 0.1), transparent 60%),
+      #151514;
+    font: 400 12.5px/1 var(--font-mono);
+    overflow: hidden;
+  }
+
+  .v-url {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+    padding: 6px 6px 6px 14px;
+    border-radius: 999px;
+    background: #222120;
+    border: 1px solid #2e2d2a;
+  }
+
+  .v-dim {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #a6a19a;
+  }
+
+  .v-ext {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #2e2d2a;
+  }
+
+  .v-ext img {
+    border-radius: 4px;
+  }
+
+  .v-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 5px;
+    background: #ff5e1f;
+    color: #fff;
+    font: 700 9.5px/15px var(--font-body);
+    text-align: center;
+    box-shadow: 0 0 0 2px #151514;
+  }
+
+  .v-copy {
+    position: relative;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .v-btn {
+    display: block;
+    padding: 13px 12px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ff8a3d, #ff5e1f);
+    color: #fff;
+    font: 600 13px/1 var(--font-body);
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px -10px rgba(255, 94, 31, 0.7);
+  }
+
+  .v-cursor {
+    position: absolute;
+    right: 22%;
+    bottom: -12px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  }
+
+  .v-term {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #0d0d0c;
+    border: 1px solid #2e2d2a;
+    color: #e6e3de;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .v-term .v-dim {
+    flex: 0 1 auto;
+    margin-left: 6px;
+  }
+
+  .v-gt {
+    color: #d97757;
+  }
+
+  .v-caret {
+    flex: none;
+    width: 7px;
+    height: 15px;
+    margin-left: 4px;
+    background: #e6e3de;
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .step-n,
+  .step h4,
+  .step p {
+    padding: 0 14px;
+  }
+
+  .step-n {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ff8a3d;
+  }
+
+  .step h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin: 0.3rem 0 0.5rem;
+  }
+
+  .step p {
+    font-size: 0.9375rem;
+    color: #a6a19a;
+    margin: 0;
+  }
+
+  /* ── What your agent gets ── */
+  .gets {
+    padding-top: var(--section);
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem clamp(2rem, 5vw, 4rem);
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .split h3 {
+    font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.625rem);
+    font-weight: 550;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+  }
+
+  .split p {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .split strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .stage {
+    margin-top: 2.5rem;
+    padding: clamp(1.25rem, 5vw, 4rem) clamp(1rem, 6vw, 5.5rem) clamp(1.25rem, 4vw, 3rem);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(70% 80% at 50% 0%, color-mix(in srgb, var(--mark) 14%, transparent), transparent 70%),
+      #efe6dc;
+    text-align: center;
+  }
+
+  /* ── Closer ── */
+  .closer-wrap {
+    padding-top: var(--section);
+    padding-bottom: var(--section);
+  }
+
+  .closer {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 520px;
+    padding: clamp(4rem, 9vw, 6rem) 1.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--sheet);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* The tiles fill the card and fade out towards the middle */
+  .tiles {
+    position: absolute;
+    inset: 20px;
+    z-index: -1;
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    -webkit-mask-image: radial-gradient(ellipse 46% 52% at 50% 50%, transparent 40%, #000 100%);
+    mask-image: radial-gradient(ellipse 46% 52% at 50% 50%, transparent 40%, #000 100%);
+  }
+
+  .tiles li {
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--paper);
+  }
+
+  .tiles li.on-wide {
+    background: var(--sheet);
+    box-shadow: 0 0 0 1px var(--rule), 0 10px 24px -12px rgba(30, 25, 20, 0.25);
+    animation: float 6s ease-in-out infinite;
+    animation-delay: calc(var(--d) * -0.55s);
+  }
+
+  .tiles img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+
+  .t-phone {
+    display: none;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .closer-copy {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    max-width: 520px;
+  }
+
+  .closer-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 16px 32px -14px rgba(255, 94, 31, 0.6);
+  }
+
+  .closer-h {
+    font-size: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+  }
+
+  .closer-sub {
+    margin: 1rem 0 0;
+    font-size: 1.125rem;
+    color: var(--ink-2);
+  }
+
+  .keys {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 1.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .keys kbd {
+    padding: 0.15rem 0.45rem;
+    border: 0;
+    border-radius: 7px;
+    background: var(--tint);
+    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+    color: var(--ink-2);
+    font: 500 0.8125rem/1.3 var(--font-body);
+  }
+
+  @media (max-width: 640px) {
+    .closer {
+      min-height: 640px;
+    }
+
+    .tiles {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      -webkit-mask-image: linear-gradient(#000 0 11%, transparent 15% 85%, #000 89%);
+      mask-image: linear-gradient(#000 0 11%, transparent 15% 85%, #000 89%);
+    }
+
+    /* No keyboard on a phone */
+    .keys {
+      display: none;
+    }
+
+    .tiles li:nth-child(n + 41) {
+      display: none;
+    }
+
+    .tiles li.on-wide {
+      background: var(--paper);
+      box-shadow: none;
+      animation: none;
+    }
+
+    .tiles li.on-phone {
+      background: var(--sheet);
+      box-shadow: 0 0 0 1px var(--rule), 0 10px 24px -12px rgba(30, 25, 20, 0.25);
+      animation: float 6s ease-in-out infinite;
+      animation-delay: calc(var(--d) * -0.55s);
+    }
+
+    .t-wide {
+      display: none;
+    }
+
+    .t-phone {
+      display: block;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal-section[data-reveal] {
+    .tiles li.on-wide,
+    .tiles li.on-phone {
+      animation: none;
+    }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .steps,
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ── Scroll-reveal entrance ── */
+  .reveal[data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .reveal[data-reveal].visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal[data-reveal] {
       opacity: 1;
       transform: none;
-      transition: none;
     }
   }
 </style>

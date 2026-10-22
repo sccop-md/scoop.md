@@ -1,0 +1,663 @@
+---
+// The copy flow, drawn as a dark browser on a docs page: the toolbar icon opens the popup and
+// Copy puts the llms.txt prompt on the clipboard. Drawn at 1000×600 (400×620 on phones, without
+// the sidebar) and scaled to fit. Vanilla JS timeline,
+// paused off-screen; prefers-reduced-motion shows the final frame.
+
+const sidebar = ['Get started', 'Payments', 'Checkout', 'Billing', 'Connect', 'Webhooks', 'Testing', 'API reference'];
+---
+
+<div
+  class="demo"
+  role="img"
+  aria-label="A browser on Stripe’s webhook docs. The scoop.md toolbar icon opens a popup showing the site’s llms.txt, 527 pages, and its instructions for agents. Copy is clicked and the prompt is copied for your agent."
+>
+  <div class="canvas" aria-hidden="true">
+    <!-- Browser -->
+    <div class="browser">
+      <div class="bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>docs.stripe.com/webhooks</div>
+        <div class="tools">
+          <span class="tool"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3z"/></svg></span>
+          <span class="tool scoop"><img src="/favicon.png" width="16" height="16" alt="" /><span class="badge">2</span></span>
+        </div>
+      </div>
+
+      <div class="page">
+        <nav class="side">
+          <div class="side-brand">stripe <span>docs</span></div>
+          {sidebar.map((s) => <div class:list={['side-item', { on: s === 'Webhooks' }]}>{s}</div>)}
+        </nav>
+        <article class="doc">
+          <div class="crumb">Developer tools <span>/</span> Webhooks</div>
+          <h4>Receive Stripe events in your webhook endpoint</h4>
+          <p>Listen for events from Stripe on your webhook endpoint so your integration can automatically trigger reactions.</p>
+          <p>You can create an HTTPS webhook endpoint to receive events. After you register it, Stripe pushes real-time data when events happen in your account.</p>
+          <div class="code"><span class="k">$</span> stripe listen --forward-to localhost:4242/webhook</div>
+          <h5>Set up your endpoint</h5>
+          <p>Use the API or the Webhooks tab in Workbench to register your endpoint’s accessible URL so Stripe knows where to deliver events.</p>
+        </article>
+        <div class="page-fade"></div>
+      </div>
+    </div>
+
+    <!-- Popup, dropping from the toolbar icon -->
+    <div class="popup">
+      <div class="p-head">
+        <img src="/icon-192.png" width="20" height="20" alt="" />
+        <span>scoop<span class="p-ext">.md</span></span>
+      </div>
+      <div class="p-load"><span class="spin"></span>Finding llms.txt…</div>
+      <div class="p-body">
+        <div class="row r1 p-site">
+          <span class="p-fav"><span></span></span>
+          <b class="p-name">docs.stripe.com</b>
+          <span class="p-chip">llms.txt detected</span>
+        </div>
+        <div class="row r2 copy">
+          <span class="lbl lbl-copy"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h10"/></svg>Copy llms.txt + instructions</span>
+          <span class="lbl lbl-done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Copied</span>
+        </div>
+        <div class="row r3 peek">Stripe docs for agents: https://docs.stripe.com/llms.txt — read it first, then fetch only the pages you need.
+
+## Best practices for integrating Stripe</div>
+        <div class="row r4 p-details">Details <span>⌄</span></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Copied. Paste it into your agent.</div>
+
+    <!-- Cursor -->
+    <svg class="cursor" width="20" height="20" viewBox="0 0 20 20"><path d="M4 2l12 8-6 1-3 7z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+
+<script>
+  for (const demo of document.querySelectorAll<HTMLElement>('.demo')) {
+    const canvas = demo.querySelector<HTMLElement>('.canvas')!;
+
+    // Scale the drawing (1000px wide, or 400px on phones) to the frame
+    new ResizeObserver(([e]) => canvas.style.setProperty('--k', String(e.contentRect.width / canvas.offsetWidth))).observe(demo);
+
+    const states = ['s-at-icon', 's-open', 's-loaded', 's-at-copy', 's-copied', 's-toast', 's-fade'];
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      ['s-open', 's-loaded', 's-copied', 's-toast'].forEach((c) => demo.classList.add(c));
+      continue;
+    }
+
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    let running = false;
+    const at = (ms: number, c: string) => timers.push(setTimeout(() => demo.classList.add(c), ms));
+
+    const reset = () => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      demo.classList.remove(...states);
+    };
+
+    const run = () => {
+      reset();
+      at(500, 's-at-icon');
+      at(1200, 's-open');
+      at(2100, 's-loaded');
+      at(3300, 's-at-copy');
+      at(3900, 's-copied');
+      at(4500, 's-toast');
+      at(7600, 's-fade');
+      timers.push(setTimeout(run, 8200));
+    };
+
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !running) { running = true; run(); }
+      else if (!e.isIntersecting && running) { running = false; reset(); }
+    }).observe(demo);
+  }
+</script>
+
+<style>
+  .demo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1000 / 600;
+    user-select: none;
+  }
+
+  .canvas {
+    --k: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1000px;
+    height: 600px;
+    transform: scale(var(--k));
+    transform-origin: 0 0;
+    font-family: var(--font-body);
+    color: #e9e7e3;
+    transition: opacity 0.5s ease;
+  }
+
+  .demo.s-fade .canvas {
+    opacity: 0;
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3a3937;
+  }
+
+  .browser .dots span:nth-child(1) { background: #ff5f57; }
+  .browser .dots span:nth-child(2) { background: #febc2e; }
+  .browser .dots span:nth-child(3) { background: #28c840; }
+
+  /* ── Browser ── */
+  .browser {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: #161615;
+    border: 1px solid #2c2b29;
+    overflow: hidden;
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 46px;
+    padding: 0 14px 0 16px;
+    border-bottom: 1px solid #262523;
+    background: #1b1b1a;
+  }
+
+  .url {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 28px;
+    max-width: 420px;
+    margin: 0 auto;
+    border-radius: 8px;
+    background: #121211;
+    font: 400 12px/1 var(--font-mono);
+    color: #a29d96;
+  }
+
+  .tools {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tool {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    color: #8a857e;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .scoop img {
+    border-radius: 4px;
+  }
+
+  .badge {
+    position: absolute;
+    right: 1px;
+    bottom: 2px;
+    min-width: 13px;
+    height: 13px;
+    padding: 0 3px;
+    border-radius: 4px;
+    background: #ff5e1f;
+    color: #fff;
+    font: 700 9px/13px var(--font-body);
+    text-align: center;
+  }
+
+  .demo.s-at-icon .scoop,
+  .demo.s-open .scoop {
+    background: #2b2a28;
+  }
+
+  .demo.s-open:not(.loaded) .scoop {
+    transform: scale(0.92);
+  }
+
+  .page {
+    position: relative;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    height: calc(100% - 46px);
+  }
+
+  .side {
+    padding: 22px 18px;
+    border-right: 1px solid #232220;
+  }
+
+  .side-brand {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.03em;
+    margin-bottom: 22px;
+    color: #fff;
+  }
+
+  .side-brand span {
+    font-weight: 400;
+    color: #8a857e;
+  }
+
+  .side-item {
+    font-size: 13px;
+    color: #8a857e;
+    padding: 7px 10px;
+    border-radius: 7px;
+  }
+
+  .side-item.on {
+    background: #23221f;
+    color: #f4f2ee;
+  }
+
+  .doc {
+    padding: 30px 44px;
+    max-width: 640px;
+  }
+
+  .crumb {
+    font-size: 12px;
+    color: #8a857e;
+    margin-bottom: 14px;
+  }
+
+  .crumb span {
+    margin: 0 4px;
+  }
+
+  .doc h4 {
+    margin: 0 0 14px;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  .doc h5 {
+    margin: 22px 0 8px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .doc p {
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #a29d96;
+  }
+
+  .code {
+    margin: 16px 0 4px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #1f1e1c;
+    border: 1px solid #2c2b29;
+    font: 400 12.5px/1 var(--font-mono);
+    color: #d8d4ce;
+  }
+
+  .code .k {
+    color: #ff8a3d;
+    margin-right: 6px;
+  }
+
+  .page-fade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 120px;
+    background: linear-gradient(transparent, #161615);
+  }
+
+  /* ── Popup ── */
+  .popup {
+    position: absolute;
+    top: 52px;
+    right: 14px;
+    width: 340px;
+    border-radius: 14px;
+    background: #1f1e1c;
+    border: 1px solid #34322f;
+    box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top right;
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .demo.s-open .popup {
+    opacity: 1;
+    transform: none;
+  }
+
+  .p-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #2c2b29;
+    font-weight: 650;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+
+  .p-head img {
+    border-radius: 5px;
+  }
+
+  .p-ext {
+    color: #8a857e;
+    font-weight: 500;
+  }
+
+  .p-load {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 14px;
+    font-size: 13px;
+    color: #a29d96;
+  }
+
+  .demo.s-loaded .p-load {
+    display: none;
+  }
+
+  .spin {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #3a3937;
+    border-top-color: #ff8a3d;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .p-body {
+    display: none;
+    padding: 14px;
+  }
+
+  .demo.s-loaded .p-body {
+    display: grid;
+    gap: 10px;
+  }
+
+  .row {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .demo.s-loaded .row {
+    opacity: 1;
+    transform: none;
+  }
+
+  .demo.s-loaded .r2 { transition-delay: 0.08s; }
+  .demo.s-loaded .r3 { transition-delay: 0.16s; }
+  .demo.s-loaded .r4 { transition-delay: 0.24s; }
+
+  /* The popup body, as in the extension: the site, the Copy button, a peek, Details */
+  .p-site {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .p-fav {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #161615;
+    box-shadow: inset 0 0 0 1px #2c2b29;
+  }
+
+  .p-fav span {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #7a73ff, #635bff);
+  }
+
+  .p-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f4f2ee;
+  }
+
+  .p-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 4px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px #2e2d2a;
+    color: #e6e3de;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .p-chip::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff5e1f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4L18 8'/%3E%3C/svg%3E") center / 11px no-repeat;
+  }
+
+  .copy {
+    position: relative;
+    height: 44px;
+    border-radius: 11px;
+    background: linear-gradient(180deg, #ff8a3d, #ff5e1f);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 10px 22px -12px #ff5e1f;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 600;
+    overflow: hidden;
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.12s ease;
+  }
+
+  .demo.s-at-copy:not(.s-copied) .copy {
+    transform: scale(0.98);
+  }
+
+  .demo.s-copied .copy {
+    background: #f4f2ee;
+    color: #121211;
+    box-shadow: none;
+  }
+
+  .lbl {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .lbl-done {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .demo.s-copied .lbl-copy {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  .demo.s-copied .lbl-done {
+    opacity: 1;
+    transform: none;
+  }
+
+  .peek {
+    max-height: 62px;
+    overflow: hidden;
+    padding: 9px 11px;
+    border-radius: 9px;
+    background: #161615;
+    box-shadow: inset 0 0 0 1px #2c2b29;
+    color: #c8c4be;
+    font: 400 11px/1.6 var(--font-mono);
+    white-space: pre-wrap;
+    -webkit-mask-image: linear-gradient(#000 55%, transparent);
+    mask-image: linear-gradient(#000 55%, transparent);
+  }
+
+  .demo.s-loaded .peek {
+    opacity: 1;
+  }
+
+  .p-details {
+    font-size: 12px;
+    color: #8a857e;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: #f4f2ee;
+    color: #121211;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: translate(-50%, 16px);
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .demo.s-toast .toast {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* ── Cursor ── */
+  .cursor {
+    position: absolute;
+    left: 560px;
+    top: 330px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    transition: left 0.7s cubic-bezier(0.45, 0, 0.2, 1), top 0.7s cubic-bezier(0.45, 0, 0.2, 1), opacity 0.3s ease;
+  }
+
+  .demo.s-at-icon .cursor {
+    left: 962px;
+    top: 26px;
+  }
+
+  .demo.s-at-copy .cursor {
+    left: 812px;
+    top: 176px;
+  }
+
+  .demo.s-toast .cursor {
+    opacity: 0;
+  }
+
+  /* ── Phones: a portrait browser, one docs column, the popup and toast sized to it ── */
+  @media (max-width: 640px) {
+    .demo {
+      aspect-ratio: 400 / 620;
+    }
+
+    .canvas {
+      width: 400px;
+      height: 620px;
+    }
+
+    .bar {
+      gap: 10px;
+      padding: 0 10px 0 14px;
+    }
+
+    .url {
+      font-size: 11px;
+    }
+
+    .page {
+      grid-template-columns: 1fr;
+    }
+
+    .side {
+      display: none;
+    }
+
+    .doc {
+      padding: 24px 22px;
+    }
+
+    .doc h4 {
+      font-size: 23px;
+    }
+
+    .popup {
+      right: 10px;
+      width: 340px;
+    }
+
+    .toast {
+      bottom: 30px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .cursor {
+      left: 210px;
+      top: 470px;
+    }
+
+    .demo.s-at-icon .cursor {
+      left: 367px;
+      top: 26px;
+    }
+
+    .demo.s-at-copy .cursor {
+      left: 214px;
+      top: 176px;
+    }
+  }
+</style>

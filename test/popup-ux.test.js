@@ -352,7 +352,7 @@ test('main view, the site’s own llms.txt: the llms.txt field (opens the file),
   await p.ready;
   assert.equal(p.clipboard.text, PROMPT, 'the exact prompt');
   const { meta, ...rest } = main(p);
-  assert.deepEqual(rest, { field: `${SITE}/llms.txt`, badge: false, agent: null, button: 'Copied ✓', notDev: null });
+  assert.deepEqual(rest, { field: `${SITE}/llms.txt`, badge: false, agent: null, button: 'Copied', notDev: null });
   assert.match(meta, /^412 pages · checked today · found in \d+\.\ds$/, 'the final time stays in the meta');
   const stopped = p.$('elapsed').textContent;
   assert.match(stopped, /^\d+\.\ds$/);
