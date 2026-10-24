@@ -3,6 +3,7 @@ import '@fontsource-variable/geist/wght.css';
 import '@fontsource-variable/geist-mono/wght.css';
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
+import ChromeIcon from '../components/ChromeIcon.astro';
 import Beacon from '../components/Beacon.astro';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
@@ -69,6 +70,7 @@ const nav = [
             }
           </ul>
           <a class="btn nav-cta" href={CHROME_STORE_URL ?? GITHUB_URL} data-cta="nav_chrome">
+            {CHROME_STORE_URL && <ChromeIcon />}
             {CHROME_STORE_URL ? 'Add to Chrome' : 'Get it'}
           </a>
           <button class="menu" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu">

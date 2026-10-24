@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import ProductDemo from '../components/ProductDemo.astro';
 import AgentSlider from '../components/AgentSlider.astro';
 import HeroFlow from '../components/HeroFlow.astro';
+import ChromeIcon from '../components/ChromeIcon.astro';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
 export const prerender = true;
@@ -46,7 +47,7 @@ const steps = [
     <h1 id="hero-title">Scoop any doc</h1>
     <p class="lede">One click copies any docs site’s llms.txt for your coding agent.</p>
     <div class="cta">
-      <a class="btn" href={ctaHref} data-cta={CHROME_STORE_URL ? 'chrome_store' : 'github_coming_soon'}>{cta}</a>
+      <a class="btn" href={ctaHref} data-cta={CHROME_STORE_URL ? 'chrome_store' : 'github_coming_soon'}>{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
       <a class="btn btn--soft" href="/library" data-cta="library">Browse library</a>
     </div>
 
@@ -72,7 +73,7 @@ const steps = [
         <h2 id="panel-title" class="big">The <span class="mark">Full Map</span> of Any Doc</h2>
         <p class="sub">llms.txt plus agent instructions, in one click.</p>
         <div class="cta">
-          <a class="btn btn--light" href={ctaHref} data-cta="panel_chrome">{cta}</a>
+          <a class="btn btn--light" href={ctaHref} data-cta="panel_chrome">{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
           <a class="btn btn--ghost" href="#gets">See what’s copied</a>
         </div>
       </div>
@@ -145,7 +146,7 @@ const steps = [
         <h2 id="closer-title" class="closer-h">Every doc, one click away.</h2>
         <p class="closer-sub">Free, open source, no account.</p>
         <div class="cta">
-          <a class="btn" href={ctaHref} data-cta="closer">{cta}</a>
+          <a class="btn" href={ctaHref} data-cta="closer">{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
           <a class="btn btn--soft" href="/library" data-cta="closer_library">Browse library</a>
         </div>
         <p class="keys">or press <kbd>Alt</kbd><kbd>Shift</kbd><kbd>C</kbd> on any docs page</p>
