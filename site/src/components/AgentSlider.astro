@@ -13,16 +13,19 @@ const tabs = [
   ['googlegemini', 'Gemini CLI'],
 ];
 
-// The Claude Code mascot as Claude Code draws it, row by row (X = filled): a block body with
-// two tall eyes, an arm out each side, and four legs.
+// The Claude Code mascot as Claude Code draws it, row by row (X = filled), traced from the real
+// terminal: a wide block body, a narrow eye slit each side, an arm out each side, four legs.
 const mascot = [
-  '..XXXXXXXXX..',
-  '..XX.XXX.XX..',
-  'XXXX.XXX.XXXX',
-  'XXXXXXXXXXXXX',
-  '..XXXXXXXXX..',
-  '..X.X...X.X..',
-  '..X.X...X.X..',
+  '..XXXXXXXXXXXXX..',
+  '..XXXXXXXXXXXXX..',
+  '..XX.XXXXXXX.XX..',
+  '..XX.XXXXXXX.XX..',
+  'XXXXXXXXXXXXXXXXX',
+  'XXXXXXXXXXXXXXXXX',
+  '..XXXXXXXXXXXXX..',
+  '..XXXXXXXXXXXXX..',
+  '..X.X.......X.X..',
+  '..X.X.......X.X..',
 ];
 
 // What the editor agents write. `add` lines are the ones the agent adds.
@@ -97,7 +100,7 @@ const editors = [
       <div class="t-bar" aria-hidden="true"><div class="dots"><span></span><span></span><span></span></div><span class="t-title">shop — claude — 100×30</span></div>
       <div class="t-body" aria-hidden="true">
         <div class="cc-top">
-          <svg class="mascot" viewBox="0 0 13 7" width="78" height="42" shape-rendering="crispEdges">
+          <svg class="mascot" viewBox="0 0 17 10" width="85" height="48" preserveAspectRatio="none" shape-rendering="crispEdges">
             {mascot.flatMap((row, y) => [...row].map((c, x) => c === 'X' && <rect x={x} y={y} width="1" height="1" />))}
           </svg>
           <div class="cc-info">
@@ -511,7 +514,7 @@ const editors = [
   .cc-top {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 22px;
   }
 
   .cc-info {
@@ -520,7 +523,7 @@ const editors = [
 
   .mascot {
     flex: none;
-    fill: #e5482a;
+    fill: #fc3a1e;
   }
 
   /* Claude Code's prompt is a bare line between two rules */
