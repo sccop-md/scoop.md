@@ -477,8 +477,8 @@ test('main view, the library unreachable and no llms.txt here: "Couldn’t reach
   assert.equal(p.clipboard.text, null);
 }));
 
-test('0.6.0: the version (0.6.1), the button wording, one view only, and only the permissions it needs', () => {
-  assert.equal(MANIFEST.version, '0.6.1');
+test('0.6.0: the version (0.6.2), the button wording, one view only, and only the permissions it needs', () => {
+  assert.equal(MANIFEST.version, '0.6.2');
   const html = read('../extension/popup.html');
   assert.match(html, /<span id="copy-llms-label">Copy llms\.txt<\/span>/);
   assert.match(html, /scoop.md has nothing to copy for this site./);
