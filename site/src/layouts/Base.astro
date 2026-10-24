@@ -21,9 +21,9 @@ interface Props {
 const {
   noReferrer = false,
   title,
-  description = 'Scoop any doc. One click on any site copies its llms.txt for Claude Code, Codex, Cursor or any coding agent.',
+  description = 'Scoop developer docs. One click on a developer documentation site copies its llms.txt for Claude Code, Codex, Cursor or any coding agent.',
 } = Astro.props;
-const fullTitle = title ? `${title} · scoop.md` : 'scoop.md: Scoop any doc';
+const fullTitle = title ? `${title} · scoop.md` : 'scoop.md: Scoop developer docs';
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const canonical = new URL(path, Astro.site ?? 'https://scoop.md');
 const nav = [

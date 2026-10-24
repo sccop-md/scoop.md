@@ -1,5 +1,5 @@
 <p align="center">
-  <b>One click copies any docs site's <code>llms.txt</code> for your coding agent.</b>
+  <b>One click copies a developer docs site's <code>llms.txt</code> for your coding agent.</b>
 </p>
 
 <p align="center">
@@ -22,7 +22,7 @@
 
 ## What it is
 
-A "Scoop to agent" button that works on any documentation site. Click it and the site's `llms.txt` and its instructions for agents land on your clipboard, as a short prompt to paste into Claude Code, Codex, Cursor or any other coding agent. The agent reads the index and fetches only the pages it needs, so you never paste a wall of docs.
+A "Scoop to agent" button that works on developer documentation sites. Click it and the site's `llms.txt` and its instructions for agents land on your clipboard, as a short prompt to paste into Claude Code, Codex, Cursor or any other coding agent. The agent reads the index and fetches only the pages it needs, so you never paste a wall of docs.
 
 - **One click.** The toolbar icon, or <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> on any docs page.
 - **Just the map.** A short prompt with the `llms.txt` link and the site's own instructions for agents, not the docs.
