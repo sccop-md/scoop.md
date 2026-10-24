@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "scoop.md",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Scoop any doc. One click turns any documentation site into context for your coding agent.",
   "icons": {
     "16": "icons/icon16.png",

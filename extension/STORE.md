@@ -1,6 +1,6 @@
 # Chrome Web Store listing: scoop.md
 
-Everything the Web Store dashboard asks for, matching what the code in this folder does (version 0.6.2). Build the upload with `npm run pack:extension` → `dist/scoop.md-extension-<version>.zip`. This file and the artwork in `store-assets/` aren't included in the zip.
+Everything the Web Store dashboard asks for, matching what the code in this folder does (version 0.6.3). Build the upload with `npm run pack:extension` → `dist/scoop.md-extension-<version>.zip`. This file and the artwork in `store-assets/` aren't included in the zip.
 
 ## Store listing
 
@@ -77,7 +77,7 @@ Certifications to tick:
 
 ## Store artwork
 
-In `store-assets/` (copies in `dist/store/`), retaken for 0.6.2 in Google Chrome with the unpacked extension against production (api.scoop.md): the real popup, composed at the top right of the page (1280×800, 1.2× popup). `6-badge.png` and the two promo tiles predate the 0.6.2 redesign.
+In `store-assets/` (copies in `dist/store/`), retaken in Google Chrome with the unpacked extension against production (api.scoop.md): the real popup, composed at the top right of the page (1280×800, 1.2× popup). `6-badge.png` predates the redesign and isn't uploaded; the two promo tiles were redrawn ("Scoop developer docs into your coding agent").
 
 | File | Size | Shows |
 |---|---|---|
@@ -87,5 +87,5 @@ In `store-assets/` (copies in `dist/store/`), retaken for 0.6.2 in Google Chrome
 | `4-stripe-dark.png` | 1280×800 | docs.stripe.com in the dark theme, Copied |
 | `5-not-developer.png` | 1280×800 | amazon.com: "No llms.txt here. scoop.md has nothing to copy for this site." |
 | `6-badge.png` | 1280×800 | The toolbar badge close-ups: "2" on docs.stripe.com, "1" on hono.dev, nothing on example.com |
-| `promo-small-440x280.png` | 440×280 | Small promo tile: the icon with the "2" badge, "scoop.md", "Scoop any doc's llms.txt" and the "Copy llms.txt + instructions" button on #ffeee0 |
-| `promo-marquee-1400x560.png` | 1400×560 | Marquee: "Scoop any doc's llms.txt" with the docs.stripe.com popup (llms.txt field, instructions for agents, "Copied ✓") and the toolbar icon showing "2" |
+| `promo-small-440x280.png` | 440×280 | Small promo tile: the icon, "scoop.md", "Scoop developer docs into your coding agent" and the popup (hono.dev, Copied) on #ffeee0 |
+| `promo-marquee-1400x560.png` | 1400×560 | Marquee: the same headline with the docs.stripe.com popup (llms.txt, instructions for agents) |
