@@ -1,8 +1,4 @@
 <p align="center">
-  <img src="docs/images/banner.png" alt="scoop.md: Scoop any doc" width="100%">
-</p>
-
-<p align="center">
   <b>One click copies any docs site's <code>llms.txt</code> for your coding agent.</b>
 </p>
 
