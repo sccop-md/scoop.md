@@ -4,6 +4,8 @@ import ProductDemo from '../components/ProductDemo.astro';
 import AgentSlider from '../components/AgentSlider.astro';
 import HeroFlow from '../components/HeroFlow.astro';
 import ChromeIcon from '../components/ChromeIcon.astro';
+import Library from '@lucide/astro/icons/library';
+import Eye from '@lucide/astro/icons/eye';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
 export const prerender = true;
@@ -48,7 +50,7 @@ const steps = [
     <p class="lede">One click copies any docs site’s llms.txt for your coding agent.</p>
     <div class="cta">
       <a class="btn" href={ctaHref} data-cta={CHROME_STORE_URL ? 'chrome_store' : 'github_coming_soon'}>{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
-      <a class="btn btn--soft" href="/library" data-cta="library">Browse library</a>
+      <a class="btn btn--soft" href="/library" data-cta="library"><Library size={18} aria-hidden="true" />Browse library</a>
     </div>
 
     <div class="flow-wrap">
@@ -74,7 +76,7 @@ const steps = [
         <p class="sub">llms.txt plus agent instructions, in one click.</p>
         <div class="cta">
           <a class="btn btn--light" href={ctaHref} data-cta="panel_chrome">{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
-          <a class="btn btn--ghost" href="#gets">See what’s copied</a>
+          <a class="btn btn--ghost" href="#gets"><Eye size={18} aria-hidden="true" />See what’s copied</a>
         </div>
       </div>
 
@@ -84,7 +86,7 @@ const steps = [
 
       <div class="row-head reveal">
         <h3 class="mid">Three moves. No setup.</h3>
-        <a class="btn btn--ghost" href="/library">Browse library</a>
+        <a class="btn btn--ghost" href="/library"><Library size={18} aria-hidden="true" />Browse library</a>
       </div>
 
       <ol class="steps reveal">
@@ -147,7 +149,7 @@ const steps = [
         <p class="closer-sub">Free, open source, no account.</p>
         <div class="cta">
           <a class="btn" href={ctaHref} data-cta="closer">{CHROME_STORE_URL && <ChromeIcon />}{cta}</a>
-          <a class="btn btn--soft" href="/library" data-cta="closer_library">Browse library</a>
+          <a class="btn btn--soft" href="/library" data-cta="closer_library"><Library size={18} aria-hidden="true" />Browse library</a>
         </div>
         <p class="keys">or press <kbd>Alt</kbd><kbd>Shift</kbd><kbd>C</kbd> on any docs page</p>
       </div>

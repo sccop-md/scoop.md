@@ -4,6 +4,10 @@ import '@fontsource-variable/geist-mono/wght.css';
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
 import ChromeIcon from '../components/ChromeIcon.astro';
+import Library from '@lucide/astro/icons/library';
+import GitFork from '@lucide/astro/icons/git-fork';
+import ShieldCheck from '@lucide/astro/icons/shield-check';
+import FileText from '@lucide/astro/icons/file-text';
 import Beacon from '../components/Beacon.astro';
 import { CHROME_STORE_URL, GITHUB_URL } from '../lib/links';
 
@@ -23,8 +27,14 @@ const fullTitle = title ? `${title} · scoop.md` : 'scoop.md: Scoop any doc';
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const canonical = new URL(path, Astro.site ?? 'https://scoop.md');
 const nav = [
-  { href: '/library', label: 'Library' },
-  { href: GITHUB_URL, label: 'GitHub' },
+  { href: '/library', label: 'Library', icon: Library },
+  { href: GITHUB_URL, label: 'GitHub', icon: GitFork },
+];
+const footer = [
+  { href: '/library', label: 'Library', icon: Library },
+  { href: '/privacy', label: 'Privacy', icon: ShieldCheck },
+  { href: '/terms', label: 'Terms', icon: FileText },
+  { href: GITHUB_URL, label: 'GitHub', icon: GitFork },
 ];
 ---
 
@@ -63,6 +73,7 @@ const nav = [
               nav.map((item) => (
                 <li>
                   <a href={item.href} aria-current={path === item.href ? 'page' : undefined}>
+                    <item.icon size={16} aria-hidden="true" />
                     {item.label}
                   </a>
                 </li>
@@ -87,10 +98,9 @@ const nav = [
     <footer class="site-footer">
       <div class="wrap foot">
         <ul>
-          <li><a href="/library">Library</a></li>
-          <li><a href="/privacy">Privacy</a></li>
-          <li><a href="/terms">Terms</a></li>
-          <li><a href={GITHUB_URL}>GitHub</a></li>
+          {footer.map((item) => (
+            <li><a href={item.href}><item.icon size={15} aria-hidden="true" />{item.label}</a></li>
+          ))}
         </ul>
       </div>
     </footer>
@@ -237,12 +247,20 @@ const nav = [
     position: relative;
   }
 
+  .foot ul a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+  }
+
   nav ul a {
     font: 450 0.95rem/1 var(--font-body);
     color: var(--ink-2);
     text-decoration: none;
     padding: 0.5rem 0;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
     transition: color 0.2s ease;
   }
 
