@@ -1,6 +1,6 @@
 # Chrome Web Store listing: scoop.md
 
-Everything the Web Store dashboard asks for, matching what the code in this folder does (version 0.6.1). Build the upload with `npm run pack:extension` → `dist/scoop.md-extension-<version>.zip`. This file and the artwork in `store-assets/` aren't included in the zip.
+Everything the Web Store dashboard asks for, matching what the code in this folder does (version 0.6.2). Build the upload with `npm run pack:extension` → `dist/scoop.md-extension-<version>.zip`. This file and the artwork in `store-assets/` aren't included in the zip.
 
 ## Store listing
 
