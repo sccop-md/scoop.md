@@ -692,7 +692,8 @@ const steps = [
     font: 500 0.8125rem/1.3 var(--font-body);
   }
 
-  @media (max-width: 640px) {
+  /* The 10-column tile grid crowds the copy below desktop width, so tablets get the phone grid too */
+  @media (max-width: 860px) {
     .closer {
       min-height: 640px;
     }
@@ -702,11 +703,6 @@ const steps = [
       gap: 10px;
       -webkit-mask-image: linear-gradient(#000 0 11%, transparent 15% 85%, #000 89%);
       mask-image: linear-gradient(#000 0 11%, transparent 15% 85%, #000 89%);
-    }
-
-    /* No keyboard on a phone */
-    .keys {
-      display: none;
     }
 
     .tiles li:nth-child(n + 41) {
@@ -732,6 +728,13 @@ const steps = [
 
     .t-phone {
       display: block;
+    }
+  }
+
+  /* No keyboard on a phone */
+  @media (max-width: 640px) {
+    .keys {
+      display: none;
     }
   }
 
