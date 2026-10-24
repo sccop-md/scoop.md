@@ -6,14 +6,14 @@ Everything the "Launch a product" form asks for. Character limits are Product Hu
 
 **Name (≤ 40):** scoop.md
 
-**Tagline (≤ 60):** Scoop any doc's llms.txt for your coding agent
+**Tagline (≤ 60):** Scoop developer docs' llms.txt for your coding agent
 
 Alternatives:
-- One click to give your coding agent any docs site
+- One click to give your coding agent any developer docs site
 - A "Scoop to agent" button for every documentation site
 
 **Description (≤ 260):**
-A Chrome extension. Open any docs site, click scoop.md, and the site's llms.txt plus its instructions for agents are on your clipboard as a short prompt. Paste it into Claude Code, Codex or Cursor. No llms.txt? scoop.md builds one. Free and open source.
+A Chrome extension for developer documentation. Open a developer docs site, click scoop.md, and its llms.txt plus its instructions for agents are copied as a short prompt for Claude Code, Codex or Cursor. No llms.txt? scoop.md builds one. Free, open source.
 
 **Topics:** Developer Tools, Artificial Intelligence, Chrome Extensions, Open Source
 
@@ -30,7 +30,7 @@ Product Hunt wants 1270×760 images; the 1280×800 store images are close, so cr
 
 | # | File | Caption |
 |---|---|---|
-| 1 | `extension/store-assets/promo-marquee-1400x560.png` (or a 1270×760 recut) | Scoop any doc's llms.txt |
+| 1 | `extension/store-assets/promo-marquee-1400x560.png` (or a 1270×760 recut) | Scoop developer docs' llms.txt |
 | 2 | `extension/store-assets/1-stripe.png` | On docs.stripe.com: the llms.txt and Stripe's own instructions for agents, copied |
 | 3 | `extension/store-assets/3-python.png` | No llms.txt? scoop.md prepares one and hosts it |
 | 4 | `extension/store-assets/6-badge.png` | The toolbar badge: 1 = llms.txt, 2 = llms.txt + instructions |
@@ -45,7 +45,7 @@ Product Hunt wants 1270×760 images; the 1280×800 store images are close, so cr
 >
 > Coding agents are only as good as the docs you hand them. Pasting a whole docs site burns context; pointing an agent at a homepage makes it guess. More and more sites publish an `llms.txt`: an index written for agents, often with instructions on how to install and use the product. Almost nobody knows where to find it.
 >
-> scoop.md is the button that finds it. Open any documentation site, click the icon (or Alt+Shift+C), and you get a short prompt on your clipboard:
+> scoop.md is the button that finds it. Open any developer documentation site, click the icon (or Alt+Shift+C), and you get a short prompt on your clipboard:
 >
 > `Stripe docs for agents: https://docs.stripe.com/llms.txt — read it first, then fetch only the pages you need.`
 >
