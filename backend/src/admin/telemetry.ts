@@ -48,6 +48,7 @@ function range(url: URL, maxDays: number): { from: string; to: string } {
 
 export const telemetryRoutes: { method: string; pattern: RegExp; handler: (c: Ctx) => Promise<Response> }[] = [
   { method: 'GET', pattern: /^\/api\/telemetry\/overview$/, handler: async ({ env, url }) => json(200, await t.overview(env.TELEMETRY_DB, days(url))) },
+  { method: 'GET', pattern: /^\/api\/telemetry\/live$/, handler: async ({ env }) => json(200, await t.live(env.TELEMETRY_DB)) },
   { method: 'GET', pattern: /^\/api\/telemetry\/sites$/, handler: async ({ env, url }) => json(200, { days: days(url), rawFrom: t.dayOf(new Date(), Math.min(days(url), t.RAW_DAYS) - 1), sites: await t.topSites(env.TELEMETRY_DB, days(url)) }) },
   {
     method: 'GET',

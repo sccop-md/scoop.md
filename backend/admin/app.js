@@ -977,7 +977,7 @@ function crawlCostCards(c) {
 // Usage statistics (docs/TELEMETRY.md): #/telemetry/<tab>, with ?days= for the window.
 
 const TELEMETRY_TABS = [
-  ['', 'Overview'], ['sites', 'Sites'], ['users', 'Users'], ['retention', 'Retention'], ['platforms', 'Versions & platforms'],
+  ['live', 'Live'], ['', 'Overview'], ['sites', 'Sites'], ['users', 'Users'], ['retention', 'Retention'], ['platforms', 'Versions & platforms'],
   ['geo', 'Geography'], ['errors', 'Errors'], ['api', 'API usage'], ['website', 'Website'], ['export', 'Export'],
 ];
 const pct = (n, d) => (d ? `${Math.round((n / d) * 100)}%` : '—');
@@ -1039,9 +1039,56 @@ async function telemetry(r) {
   const tab = r.parts[1] ?? '';
   if (tab === 'sites' && r.parts[2]) return telemetrySite(r);
   if (tab === 'users' && r.parts[2]) return telemetryInstall(r);
-  const view = { '': telemetryOverview, sites: telemetrySites, users: telemetryUsers, retention: telemetryRetention, platforms: telemetryPlatforms, geo: telemetryGeo, errors: telemetryErrors, api: telemetryApi, website: telemetryWebsite, export: telemetryExport }[tab];
+  const view = { live: telemetryLive, '': telemetryOverview, sites: telemetrySites, users: telemetryUsers, retention: telemetryRetention, platforms: telemetryPlatforms, geo: telemetryGeo, errors: telemetryErrors, api: telemetryApi, website: telemetryWebsite, export: telemetryExport }[tab];
   if (!view) return [card('Not found', h('p', {}, 'No such telemetry page. '), h('a', { href: '#/telemetry' }, 'Back to telemetry'))];
   return view(r);
+}
+
+// The launch-day monitor: the last 24 hours against the 24 before, refreshed every 30 seconds while the tab is open.
+let liveTimer;
+async function telemetryLive() {
+  clearInterval(liveTimer);
+  const d = await api('telemetry/live');
+  liveTimer = setInterval(() => {
+    if (!location.hash.startsWith('#/telemetry/live')) return clearInterval(liveTimer);
+    if (!document.hidden) location.hash = '#/telemetry/live?t=' + Date.now();
+  }, 30000);
+  const delta = (k) => {
+    const a = d.now[k], b = d.before[k];
+    return h('span', { class: 'small' }, b ? `${a >= b ? '▲' : '▼'} ${Math.abs(Math.round(((a - b) / b) * 100))}% vs previous 24h` : `${fmtInt(b)} in previous 24h`);
+  };
+  const tile = (k, label) => h('div', { class: 'stat' }, h('b', {}, fmtInt(d.now[k])), h('span', {}, label), delta(k));
+  const fresh = d.lastEventAt ? Math.round((Date.parse(d.generatedAt) - Date.parse(d.lastEventAt)) / 60000) : null;
+  const hours = d.hourly.map((x) => ({ ...x, hour: x.hour.slice(5).replace('T', ' ') + ':00' }));
+  return [
+    ...telemetryHead('Live', 'live'),
+    h('p', { class: 'meta small' }, `Last 24 hours, by when the server received events. Refreshes every 30 s. Newest event: ${fresh == null ? 'none yet' : fresh < 1 ? 'under a minute ago' : `${fresh} min ago`}. Opted-out installs aren't counted.`),
+    card('Right now', h('div', { class: 'stats' },
+      tile('active', 'active installs'), tile('copies', 'llms.txt copies'), tile('popups', 'popups opened'), tile('installs', 'new installs'),
+      tile('uninstalls', 'uninstalls'), tile('optOuts', 'opt-outs'), tile('errors', 'errors'))),
+    card('Website', h('div', { class: 'stats' }, tile('views', 'page views'), tile('visitors', 'visitors'), tile('ctas', 'button clicks')),
+      table([{ label: 'Button', get: (x) => x.target || '—', cls: 'mono' }, barCol('Clicks', 'n', d.ctas)], d.ctas, 'No clicks yet.')),
+    card('By hour', table([
+      { label: 'Hour (UTC)', get: (x) => x.hour, cls: 'nowrap mono' },
+      barCol('Copies', 'copies', hours), barCol('Popups', 'popups', hours),
+      { label: 'Installs', get: (x) => fmtInt(x.installs), cls: 'num' },
+      { label: 'Views', get: (x) => fmtInt(x.views), cls: 'num hide-sm' },
+      { label: 'Errors', get: (x) => (x.errors ? h('span', { class: 'err' }, fmtInt(x.errors)) : '0'), cls: 'num' },
+    ], hours, 'No events in the last 24 hours.')),
+    h('div', { class: 'cols' },
+      card('Top sites (copies)', table([
+        { label: 'Site', get: (x) => tSiteLink(x.site) },
+        barCol('Copies', 'copies', d.sites),
+        { label: 'Installs', get: (x) => fmtInt(x.installs), cls: 'num' },
+        { label: 'Built by scoop.md', get: (x) => fmtInt(x.by_scoop), cls: 'num hide-sm' },
+        { label: 'Last', get: (x) => time(x.last_at), cls: 'nowrap' },
+      ], d.sites, 'No copies yet.')),
+      card('Where the llms.txt came from', table([
+        { label: 'Source', get: (x) => ({ site: "the site's own", scoop: 'prepared by scoop.md', fallback: 'found by the extension' }[x.source] ?? x.source ?? '—') },
+        { label: 'Trigger', get: (x) => x.trigger || '—' },
+        barCol('Copies', 'n', d.copies),
+      ], d.copies, 'No copies yet.'))),
+  ];
 }
 
 async function telemetryOverview(r) {

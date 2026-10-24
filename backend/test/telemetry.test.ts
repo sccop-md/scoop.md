@@ -476,6 +476,29 @@ test('admin telemetry: overview, sites, installs, retention, platforms, geograph
   }
 });
 
+test('admin telemetry live: the last 24 hours of copies, installs, website and errors', async () => {
+  const s = setup();
+  await seedTelemetry(s);
+  const realNow = Date.now;
+  Date.now = () => T;
+  try {
+    const l = await admin(s.env, '/api/telemetry/live');
+    assert.equal(l.status, 200);
+    assert.equal(l.body.now.installs, 2);
+    assert.equal(l.body.now.popups, 2);
+    assert.equal(l.body.now.views, 2);
+    assert.equal(l.body.now.ctas, 1);
+    assert.equal(l.body.now.errors, 1);
+    assert.equal(l.body.now.active, 2);
+    assert.equal(l.body.before.popups, 0);
+    assert.deepEqual(l.body.ctas, [{ target: 'chrome_store', n: 1 }]);
+    assert.ok(l.body.hourly.length >= 1);
+    assert.ok(l.body.lastEventAt);
+  } finally {
+    Date.now = realNow;
+  }
+});
+
 test('admin telemetry export: CSV and NDJSON downloads with Content-Disposition, under the console CSP; the archive too', async () => {
   const s = setup();
   await seedTelemetry(s);

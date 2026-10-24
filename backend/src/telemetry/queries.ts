@@ -343,3 +343,36 @@ export async function deleteInstall(db: D1Database, bucket: R2Bucket, installId:
 export async function deletions(db: D1Database, limit = 100) {
   return all(db, 'SELECT * FROM telemetry_deletions ORDER BY deleted_at DESC LIMIT ?', limit);
 }
+
+// The Live tab: the last 24 hours against the 24 before, by received time.
+// Counts of 0.6 events (llms_copy, popup_open, badge_llms_shown), installs, the website and errors.
+export async function live(db: D1Database, now = new Date(Date.now())) {
+  const since = new Date(now.getTime() - DAY_MS).toISOString();
+  const before = new Date(now.getTime() - 2 * DAY_MS).toISOString();
+  const [hourly, totals, copies, sites, ctas, last] = await Promise.all([
+    all(db, `SELECT substr(received_at, 1, 13) AS hour,
+        SUM(name = 'popup_open') AS popups, SUM(name = 'llms_copy') AS copies,
+        SUM(name = 'install') AS installs, SUM(name = 'page_view') AS views, SUM(name = 'error') AS errors
+      FROM events WHERE received_at >= ? AND source IN ('extension', 'site') GROUP BY hour ORDER BY hour`, since),
+    all(db, `SELECT CASE WHEN received_at >= ?1 THEN 'now' ELSE 'before' END AS span,
+        SUM(name = 'popup_open') AS popups, SUM(name = 'llms_copy') AS copies, SUM(name = 'install') AS installs,
+        SUM(name = 'telemetry_opt_out') AS opt_outs, SUM(name = 'page_view') AS views, SUM(name = 'cta_click') AS ctas,
+        SUM(name = 'error') AS errors, SUM(name = 'uninstall') AS uninstalls,
+        COUNT(DISTINCT CASE WHEN source = 'extension' THEN install_id END) AS active,
+        COUNT(DISTINCT CASE WHEN name = 'page_view' THEN visitor_id END) AS visitors
+      FROM events WHERE received_at >= ?2 GROUP BY span`, since, before),
+    all(db, `SELECT json_extract(props, '$.source') AS source, json_extract(props, '$.trigger') AS trigger, COUNT(*) AS n
+      FROM events WHERE received_at >= ? AND name = 'llms_copy' GROUP BY 1, 2 ORDER BY n DESC`, since),
+    all(db, `SELECT site, COUNT(*) AS copies, COUNT(DISTINCT install_id) AS installs, SUM(json_extract(props, '$.source') = 'scoop') AS by_scoop,
+        MAX(received_at) AS last_at
+      FROM events WHERE received_at >= ? AND name = 'llms_copy' AND site IS NOT NULL GROUP BY site ORDER BY copies DESC, last_at DESC LIMIT 15`, since),
+    all(db, `SELECT json_extract(props, '$.target') AS target, COUNT(*) AS n FROM events WHERE received_at >= ? AND name = 'cta_click' GROUP BY 1 ORDER BY n DESC LIMIT 10`, since),
+    first(db, `SELECT MAX(received_at) AS at FROM events`),
+  ]);
+  const span = (s: string) => totals.find((r) => r.span === s) ?? {};
+  const pick = (r: Row) => ({
+    popups: num(r.popups), copies: num(r.copies), installs: num(r.installs), uninstalls: num(r.uninstalls), optOuts: num(r.opt_outs),
+    views: num(r.views), visitors: num(r.visitors), ctas: num(r.ctas), errors: num(r.errors), active: num(r.active),
+  });
+  return { generatedAt: now.toISOString(), since, lastEventAt: (last as Row).at ?? null, now: pick(span('now')), before: pick(span('before')), hourly, copies, sites, ctas };
+}
